@@ -21,6 +21,8 @@ library(maps)
 library(oce)
 library(gtable)
 library(gdata)
+library(foreign)
+library(maptools)
 
 # functions to use
 source('funcs.r')
