@@ -18,6 +18,7 @@ library(maps)
 library(foreign)
 library(maptools)
 library(rgdal)
+library(rgeos)
 
 # functions to use
 source('funcs.r')
