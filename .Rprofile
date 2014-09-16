@@ -5,6 +5,7 @@
 cat('Seagrass...\n')
 
 # packages to use
+library(maptools)
 library(knitr)
 library(reshape2) 
 library(plyr)
@@ -16,9 +17,9 @@ library(RColorBrewer)
 library(ggmap)
 library(maps)
 library(foreign)
-library(maptools)
 library(rgdal)
 library(rgeos)
+library(gridExtra)
 
 # functions to use
 source('funcs.r')

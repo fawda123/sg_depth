@@ -48,18 +48,29 @@ sg_bins <- function(sgpts, bins = 0.25){
 # function for estimating max depth of col
 # 'dat_in' is data frame of binned proportions, returned from 'sg_bins' func
 # 'var' is seagrass variable to eval - 'all' or 'cont'
-max_est <- function(dat_in, var){
+# 'mod' is logical specifiying if linear model used to id Z is returned
+# note that the orig model is bins ~ prop, returned is coefficient for prop ~ bins
+max_est <- function(dat_in, var, mod = F){
 
   # maximum proportion for any depth bin
   max_val <- max(dat_in[, var])
   
   # use depth bins than 1% of maximum prop
-  sel <- which(dat_in[, var] > (0.01 * max_val))[1]
-  reg_dat <- dat_in[sel:nrow(dat_in), ]
+  sel <- which(dat_in[, var] < (0.01 * max_val), arr.ind = T)
+  sel <- max(sel)
+  reg_dat <- dat_in[sel:which.max(dat_in[, var]), ]
   
   # regression of bins vs prop 
   form_in <- formula(paste('bins', var, sep = '~'))
   reg <- lm(form_in, reg_dat)
+  
+  # return model coefficients if T
+  if(mod){
+    coeffs <- reg$coefficients
+    int <- -1 * coeffs[1]/coeffs[2]
+    slo <- 1/coeffs[2]
+    return(c(intercept = int, slope = slo))
+    }
   
   # max depth of col
   max_depth <- as.numeric(reg$coefficients[1])
@@ -82,6 +93,7 @@ max_est <- function(dat_in, var){
 
 #######
 # function for creating random grid of points, bounded by polygon extent
+# taken from ibi sampling manuscript functions
 # 'clip_poly' is shapefile input object
 # 'spacing' is spacing between points, as degrees
 grid_est <- function(clip_poly, spacing = 0.03){
@@ -116,7 +128,7 @@ grid_est <- function(clip_poly, spacing = 0.03){
 # function extracts bathymetric seagrass pts withing a distance from a pt
 # 'pts' is spatial points to extract
 # 'center' is pt from which buffer extends
-# 'buff' is radius of buffer
+# 'buff' is radius of buffer in dec degrees
 buff_ext <- function(pts, center, buff = 0.03){
   
   # sanity checks
