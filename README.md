@@ -1,5 +1,4 @@
-<H4>Evaluation of segrass depth of colonization</H4>
----
+## Evaluation of segrass depth of colonization</H4>
 
 'sg_segs.txt' from J. Hagy manuscript supplementary data, metadata for estuary segments
 
@@ -7,8 +6,7 @@
 
 'sg_dat.RData' is merged data from 'sg_segs.txt' and 'sg_depths.txt', created in 'dat_proc.r'
 
----
-<H5>to do</H5>
+## to do
 
 correction to mean sea level given reference of tidal datum of bath points - Old Port Tampa 8726607
 

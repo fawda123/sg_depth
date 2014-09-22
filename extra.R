@@ -152,7 +152,6 @@ grid.arrange(p1, p2,
   main = ests
   ) 
 
-
 max_est(sg_bins(buff_pts), 'all')
 
 # get depth of col ests for each point
