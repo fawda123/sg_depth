@@ -10,4 +10,3 @@
 
 correction to mean sea level given reference of tidal datum of bath points - Old Port Tampa 8726607
 
-my bins vs Jim's bins
