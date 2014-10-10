@@ -4,10 +4,17 @@ library(shiny)
 shinyUI(pageWithSidebar(
   
   # Application title
-  headerPanel("Spatially referenced depth of colonization - Old Tampa Bay"),
+  headerPanel("Spatially referenced seagrass depth of colonization"),
   
   # Sidebar with a slider input for number of observations
   sidebarPanel(
+    
+    selectInput("segment", 
+                label = h3("Select segment"), 
+                choices = list(
+                  "Old Tampa Bay 902" = "902", 
+                  "Big Bend 820" = "820"),
+                  selected = "902"),
     
     numericInput("grid_spc", 
                  label = h3("Grid spacing (dec. deg.)"), 

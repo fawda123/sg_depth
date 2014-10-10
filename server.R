@@ -8,15 +8,18 @@ library(RColorBrewer)
 library(rgdal)
 library(rgeos)
 library(gridExtra)
+library(sp)
 
 # functions to use
-source('funcs.R')
+source('funcs.r')
 
-# segment polygon for old tampa bay
-seg_shp <- readShapeSpatial('seagrass_gis/seg_902.shp')
-
-# seagrass bathmetry intersected points for old tampa bay
-sgpts_shp <- readShapeSpatial('seagrass_gis/sgpts_902_2010.shp')
+##
+# load shapefile data
+to_load <- list.files('seagrass_gis', '\\.shp$')
+shps <- vector('list', length = length(to_load))
+names(shps) <- to_load
+for(i in to_load) 
+  shps[[i]] <- readShapeSpatial(paste0('seagrass_gis/', i))
 
 # set ggplot theme
 theme_set(theme_bw())
@@ -28,12 +31,13 @@ shinyServer(function(input, output) {
   # pick test pt once pts are selected
   output$reserveControls <- renderUI({
 
+    seg_shp <- shps[[paste0('seg_', input$segment, '.shp')]]
     grid_spc <- input$grid_spc
     grid_seed <- input$grid_seed
     set.seed(grid_seed)
     pts <- grid_est(seg_shp, spacing = grid_spc) 
     
-    selectInput(inputId = 'test_pt',
+    selectInput(inputId = 'test_point',
                 label = h3('Test point'),
                 choices = 1:length(pts)
       )
@@ -45,20 +49,26 @@ shinyServer(function(input, output) {
     # plotting code
 
 #     # for debugging
+#     segment <- '820'
 #     grid_spc <- 0.02
-#     grid_seed <- 12
-#     test_pt <- 1
-#     radius <- 0.02
+#     grid_seed <- 1234
+#     test_point <- 1
+#     radius <- 0.04
 #  		thresh <- 0.1   	
 #     show_all <- F
     
     # input from ui
+    segment <- input$segment
     grid_spc <- input$grid_spc
     grid_seed <- input$grid_seed
-    test_pt <- input$test_pt
+    test_point <- input$test_point
     radius <- input$radius
   	thresh <- input$thresh
     show_all <- input$show_all
+    
+    # get data from loaded shapefiles and input segment
+    seg_shp <- shps[[paste0('seg_', segment, '.shp')]]
+    sgpts_shp <- shps[[grep(paste0('^sgpts.*', segment, '.shp$'), names(shps))]]
     
     # random points  
     set.seed(grid_seed)
@@ -71,13 +81,12 @@ shinyServer(function(input, output) {
       for(i in 1:length(pts)){
         
         eval_pt <- pts[i, ]
-        buff_pts <- buff_ext(sgpts_shp, eval_pt, buff = radius)
-      	est_pts <- data.frame(buff_pts)
-				est_pts$depth <- -1 * est_pts$depth
-        est_pts$depth <- pmax(0, est_pts$depth)
-        ests <- try(doc_est(est_pts, thresh = thresh, 
-        								depth_var = 'depth', sg_var = 'Descript' 
-        								)$ests)
+        ests <- try({
+          buff_pts <- buff_ext(sgpts_shp, eval_pt, buff = radius)
+      	  est_pts <- data.frame(buff_pts)
+          doc_single <- doc_est(est_pts, thresh = thresh )$ests
+          doc_single
+        })
       	if('try-error' %in% class(ests)) ests <- NA
         maxd[[i]] <- ests
         
@@ -129,7 +138,7 @@ shinyServer(function(input, output) {
     } else {
     
       # point from random points for buffer
-      test_pt <- pts[test_pt, ]
+      test_pt <- pts[test_point, ]
   
       # get bathym points around test_pt
       buff_pts <- buff_ext(sgpts_shp, test_pt, buff = radius)
@@ -163,15 +172,10 @@ shinyServer(function(input, output) {
       
     	##
      	# get data used to estimate depth of col
-			
 			est_pts <- data.frame(buff_pts)
-			est_pts$depth <- -1 * est_pts$depth
-      est_pts$depth <- pmax(0, est_pts$depth)
 			
 			# data
-			dat <- doc_est(est_pts, thresh = thresh, 
-				depth_var = 'depth', sg_var = 'Descript'
-				)
+			dat <- doc_est(est_pts, thresh = thresh)
 			
 			# actual ests
 			act_ests <- dat$ests
@@ -198,7 +202,6 @@ shinyServer(function(input, output) {
 				levels = c('dep_cum', 'sg_cum'),
 				labels = c('All', 'Seagrass')
 			)
-			
 			
 			cols  <- c('lightgreen', 'lightblue')
 			linesz <- 1
@@ -247,7 +250,7 @@ shinyServer(function(input, output) {
 
 			grid.arrange(p1,
 				arrangeGrob(p2, p3, ncol = 2), 
-				ncol = 1, heights = c(1.25, 1),
+				ncol = 1, heights = c(1.5, 1.5),
 				main = act_ests)
       
     }

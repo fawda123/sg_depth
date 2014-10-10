@@ -1,45 +1,86 @@
-source('.Rprofile')
+# packages to use
+library(maptools)
+library(reshape2) 
+library(plyr)
+library(ggplot2)
+library(scales)
+library(RColorBrewer)
+library(rgdal)
+library(rgeos)
+library(gridExtra)
+library(sp)
 
-# segment polygon for old tampa bay
-seg_shp <- readShapeSpatial('seagrass_gis/seg_902.shp')
+# functions to use
+source('funcs.R')
 
-# seagrass bathmetry intersected points for old tampa bay
-sgpts_shp <- readShapeSpatial('seagrass_gis/sgpts_902_2010.shp')
+# ##
+# # load shapefile data
+# to_load <- list.files('seagrass_gis', '\\.shp$')
+# shps <- vector('list', length = length(to_load))
+# names(shps) <- to_load
+# for(i in to_load) 
+#   shps[[i]] <- readShapeSpatial(paste0('seagrass_gis/', i))
 
 # set ggplot theme
 theme_set(theme_bw())
 
+# plotting code
+
 # for debugging
+segment <- '902'
 grid_spc <- 0.02
 grid_seed <- 1234
-test_pt <- 16
+test_point <- 16
 radius <- 0.04
-thresh <- 0.1    
-show_all <- F
+thresh <- 0.5   	
+
+# get data from loaded shapefiles and input segment
+seg_shp <- shps[[paste0('seg_', segment, '.shp')]]
+sgpts_shp <- shps[[grep(paste0('^sgpts.*', segment, '.shp$'), names(shps))]]
 
 # random points  
 set.seed(grid_seed)
 pts <- grid_est(seg_shp, spacing = grid_spc) 
 
 # point from random points for buffer
-test_pt <- pts[test_pt, ]
+test_pt <- pts[test_point, ]
 
 # get bathym points around test_pt
 buff_pts <- buff_ext(sgpts_shp, test_pt, buff = radius)
-  
+
+p1 <- ggplot(seg_shp, aes(long, lat)) + 
+  geom_polygon(fill = 'white') +
+  geom_path(color = 'black') +
+  theme_classic() +
+  coord_equal() +
+	xlab('Longitude') +
+	ylab('Latitude') +
+  geom_point(
+    data = data.frame(pts), 
+    aes(Var1, Var2), 
+    size = 3,
+    pch = 1
+  ) +
+  geom_point(
+    data = data.frame(buff_pts),
+    aes(coords.x1, coords.x2), 
+    colour = 'red', 
+    size = 0.3, 
+    alpha = 0.7
+  ) +
+	geom_point(
+		data = data.frame(test_pt), 
+		aes(Var1, Var2), 
+		size = 3, 
+		pch = 1
+	)
+
 ##
-# example w/ actual data
-
-# get data used to estimate depth of col
-
+ # get data used to estimate depth of col
 est_pts <- data.frame(buff_pts)
-est_pts$depth <- -1 * est_pts$depth
-est_pts$depth <- pmax(0, est_pts$depth)
 
 # data
-dat <- doc_est(est_pts, thresh = thresh, 
-	depth_var = 'depth', sg_var = 'Descript'
-	)
+dat <- doc_est(est_pts, thresh = thresh)
 
 # actual ests
 act_ests <- dat$ests
@@ -67,7 +108,6 @@ to_plo2$variable <- factor(to_plo2$variable,
 	labels = c('All', 'Seagrass')
 )
 
-
 cols  <- c('lightgreen', 'lightblue')
 linesz <- 1
 
@@ -78,7 +118,7 @@ p2 <- ggplot(to_plo2, aes(x = Depth, y = value, group = variable,
 		colour = variable)) +
  	ylab('Cumulative points') +
   xlab('Depth (m)') +
-  scale_colour_manual('Point category', values = cols) +
+  scale_colour_manual('Point category', values = rev(cols)) +
   theme(legend.position = c(0, 1), legend.justification = c(0,1))
 
 ##
@@ -96,9 +136,6 @@ to_plo$variable <- factor(to_plo$variable,
 	levels = c('dep_slo', 'sg_slo', grep('Thresh', levels(to_plo$variable), value = T)),
 	labels = c('All', 'Seagrass', thresh_lab)
 )
-
-col_pts <- rep(cols[1], nrow(to_plo))
-col_pts[to_plo$variable == 'All'] <- cols[2]
 
 p3 <- ggplot(to_plo, aes(x = Depth, y = value,
 		colour = variable, linetype = variable)) +
@@ -118,5 +155,6 @@ p3 <- ggplot(to_plo, aes(x = Depth, y = value,
 
 grid.arrange(p1,
 	arrangeGrob(p2, p3, ncol = 2), 
-	ncol = 1, heights = c(1.25, 1),
+	ncol = 1, heights = c(1.5, 1.5),
 	main = act_ests)
+    

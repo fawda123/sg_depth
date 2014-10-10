@@ -8,7 +8,7 @@
 # 'depth_var' is name of depth column in input data
 # 'sg_var' is name of seagrass column in input data
 # 'thresh' is numeric threshold value for estimating depth of col
-doc_est <- function(dat_in, depth_var = 'depth', sg_var = 'seagrass',
+doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass',
   thresh = 0.1){
   
 	# order by depth, assumes column is negative
@@ -30,7 +30,7 @@ doc_est <- function(dat_in, depth_var = 'depth', sg_var = 'seagrass',
 	pts$sg_prp <- with(pts, sg_pts/dep_pts)
 	
 	##
-	# estimate a logistic function for the data
+	# estimate a logistic growth function for the data
 	resps <- c('dep_cum', 'sg_cum')
 	pred_ls <- vector('list', length(resps))
 	names(pred_ls) <- resps
@@ -82,7 +82,8 @@ doc_est <- function(dat_in, depth_var = 'depth', sg_var = 'seagrass',
 		FUN = function(x){
 			
 			col <- preds[, grep(x, names(preds))]
-			ind <- which(with(preds,  sg_slo <= col))[1]
+			ind <- with(preds,  sg_slo <= col)
+      ind <- max(which(!ind)) + 1
 			preds[ind, 'Depth']
 			
 			}
