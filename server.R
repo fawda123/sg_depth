@@ -53,6 +53,7 @@ shinyServer(function(input, output) {
 #     grid_spc <- 0.02
 #     grid_seed <- 1234
 #     test_point <- 1
+#     point_lab <- T
 #     radius <- 0.04
 #  		thresh <- 0.1   	
 #     show_all <- F
@@ -62,6 +63,7 @@ shinyServer(function(input, output) {
     grid_spc <- input$grid_spc
     grid_seed <- input$grid_seed
     test_point <- input$test_point
+    point_lab <- input$point_lab
     radius <- input$radius
   	thresh <- input$thresh
     show_all <- input$show_all
@@ -72,7 +74,7 @@ shinyServer(function(input, output) {
     
     # random points  
     set.seed(grid_seed)
-    pts <- grid_est(seg_shp, spacing = grid_spc) 
+    pts <- grid_est(seg_shp, spacing = grid_spc)
     
     if(show_all){
       
@@ -113,15 +115,6 @@ shinyServer(function(input, output) {
 			  coord_equal() +
 				ylab('Latitude') + 
 				xlab('Longitude') +
-			  geom_point(
-			    data = maxd, 
-			    aes(Var1, Var2, size = zmax_all, colour = zmax_all)
-			  ) +
-# 				geom_point(data = unest,
-# 					aes(Var1, Var2), 
-# 					size = 3, colour = 'grey',
-# 					pch = 1
-# 					) +
 			  ggtitle('Depth of col (m)') +
     		theme(legend.position = c(0,0), legend.justification = c(0, 0)) + 
 				scale_size_continuous(name = "Depth estimate", 
@@ -132,7 +125,21 @@ shinyServer(function(input, output) {
 					breaks = brks, 
 					labels = labs) + 
 			 	guides(colour = guide_legend())
-			    	
+			   
+      # plot points with point labels if true
+      if(point_lab) {
+        maxd <- data.frame(maxd, labs = row.names(maxd))
+        p1 <- p1 + geom_text(
+			    data = maxd, 
+			    aes(Var1, Var2, label = labs, 
+            size = zmax_all, colour = zmax_all)
+        )
+      } else { 
+        p1 <- p1 + geom_point(
+			    data = maxd, 
+			    aes(Var1, Var2, size = zmax_all, colour = zmax_all)
+			  )}
+      
 			print(p1)
 			      
     } else {
@@ -151,24 +158,28 @@ shinyServer(function(input, output) {
     		xlab('Longitude') +
     		ylab('Latitude') +
         geom_point(
-          data = data.frame(pts), 
-          aes(Var1, Var2), 
-          size = 3,
-          pch = 1
-        ) +
-        geom_point(
           data = data.frame(buff_pts),
           aes(coords.x1, coords.x2), 
           colour = 'red', 
           size = 0.3, 
           alpha = 0.7
-        ) +
-    		geom_point(
-    			data = data.frame(test_pt), 
-    			aes(Var1, Var2), 
-    			size = 3, 
-    			pch = 1
-    		)
+        )
+      
+      # plot points wiht point labels if true
+      if(point_lab) {
+        pts <- data.frame(pts, labs = row.names(pts))
+        p1 <- p1 + geom_text(
+          data = pts,
+          aes(Var1, Var2, label = labs),
+          size = 3
+        )
+      } else { 
+        p1 <- p1 + geom_point(
+          data = data.frame(pts), 
+          aes(Var1, Var2), 
+          size = 3,
+          pch = 1
+        )}
       
     	##
      	# get data used to estimate depth of col
@@ -246,8 +257,8 @@ shinyServer(function(input, output) {
 			  theme(legend.position = c(1, 1), legend.justification = c(1, 1))
 			
 			##
-    	# combine all plots
-
+    	# combine all plot
+      
 			grid.arrange(p1,
 				arrangeGrob(p2, p3, ncol = 2), 
 				ncol = 1, heights = c(1.5, 1.5),

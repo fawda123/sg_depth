@@ -13,13 +13,13 @@ library(sp)
 # functions to use
 source('funcs.R')
 
-# ##
-# # load shapefile data
-# to_load <- list.files('seagrass_gis', '\\.shp$')
-# shps <- vector('list', length = length(to_load))
-# names(shps) <- to_load
-# for(i in to_load) 
-#   shps[[i]] <- readShapeSpatial(paste0('seagrass_gis/', i))
+##
+# load shapefile data
+to_load <- list.files('seagrass_gis', '\\.shp$')
+shps <- vector('list', length = length(to_load))
+names(shps) <- to_load
+for(i in to_load) 
+  shps[[i]] <- readShapeSpatial(paste0('seagrass_gis/', i))
 
 # set ggplot theme
 theme_set(theme_bw())
@@ -28,11 +28,11 @@ theme_set(theme_bw())
 
 # for debugging
 segment <- '902'
-grid_spc <- 0.02
+grid_spc <- 0.005
 grid_seed <- 1234
-test_point <- 16
-radius <- 0.04
-thresh <- 0.5   	
+test_point <- 299
+radius <- 0.025
+thresh <- 0.2   	
 
 # get data from loaded shapefiles and input segment
 seg_shp <- shps[[paste0('seg_', segment, '.shp')]]

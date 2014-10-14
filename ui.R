@@ -29,6 +29,10 @@ shinyUI(pageWithSidebar(
     
     uiOutput("reserveControls"),
 
+    checkboxInput("point_lab", 
+                  label = "Label points as numbers",
+                  value = T),
+    
     numericInput("radius", 
                  label = h3('Radius (dec. deg.)'), 
                  min=0, 

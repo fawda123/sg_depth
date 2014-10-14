@@ -1,12 +1,13 @@
-## Evaluation of segrass depth of colonization</H4>
+## Evaluation of segrass depth of colonization
 
-'sg_segs.txt' from J. Hagy manuscript supplementary data, metadata for estuary segments
-
-'sg_depths.txt' from J. Hagy mansucript supplementary data, final seagrass depth of colonization data
-
-'sg_dat.RData' is merged data from 'sg_segs.txt' and 'sg_depths.txt', created in 'dat_proc.r'
+Materials for seagrass depth of colonization estimates using a spatially-referenced approach, i.e., compliance point approach.  Seagrass shiny application is <a href="https://beckmw.shinyapps.io/sg_depth">here</a>.
 
 ## to do
 
 correction to mean sea level given reference of tidal datum of bath points - Old Port Tampa 8726607
 
+Fix depth of col estimates on ascending portion of curve
+
+Add checkbox for point number
+
+Include other segments

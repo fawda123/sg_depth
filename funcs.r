@@ -27,7 +27,8 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass',
 	# combine all pts and seagrass pts, depth as numeric
 	pts <- merge(dep_pts, sg_pts, by = 'Depth', all.x = T)
 	pts$Depth <- as.numeric(as.character(pts$Depth))
-	pts$sg_prp <- with(pts, sg_pts/dep_pts)
+	# output
+  pts$sg_prp <- with(pts, sg_pts/dep_pts)
 	
 	##
 	# estimate a logistic growth function for the data
@@ -51,14 +52,20 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass',
 # 		b3 <- b3
 # 		form_in <- substitute(x ~ SSgompertz(Depth, Asym, b2, b3), list(x = as.name(resp)))
 
-		# model and predictions
-		mod <- nls(form_in, data = pts, na.action = na.exclude)
+		# model
+		mod <- try(nls(form_in, data = pts, na.action = na.exclude))
 		
+    # values for prediction
 		dep_rng <- range(pts[, 'Depth'], na.rm = T)
 		new.x <- seq(dep_rng[1], dep_rng[2], length = 100)
 	
+    # return NAs if model fail, else get model predictions
+    if('try-error' %in% class(mod)) {
+      pred_ls[[resp]] <- rep(NA_real_, length = length(new.x))
+    } else {
 		pred_ls[[resp]] <- as.numeric(predict(mod, 
 			newdata = data.frame(Depth = new.x)))
+    }
 		
 	}
 	
@@ -75,6 +82,7 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass',
 	threshs <- data.frame(threshs)
 	names(threshs) <- paste('Threshold', thresh)
 	
+  # output
 	preds <- data.frame(preds, threshs)
 	
 	# calculate depth of col
@@ -88,8 +96,10 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass',
 			
 			}
 		)
+  # output
 	names(doc) <- thresh
 
+  # all output
 	return(list(data = pts, preds = preds, ests = doc))
 	  
 }
