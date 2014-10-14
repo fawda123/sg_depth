@@ -54,17 +54,23 @@
 # 
 # shps <- shps[grep('^sgpts', names(shps))]
 # 
+# # which file to convert
 # ind <- 2
 # x <- shps[[ind]]
 # 
 # # rename depth, seagrass columns, specific to each file
 # names(x)
 # names(x)[names(x) %in% 'depth'] <- 'Depth'
-# names(x)[names(x) %in% 'Descript'] <- 'Seagrass'
+# names(x)[names(x) %in% 'SEAGRASS'] <- 'Seagrass'
 # 
 # # depth as positive, floor to zero
+# # x$Depth <- pmax(0, x$Depth)
 # x$Depth <- pmax(0, -1 * x$Depth)
 # 
+# # retain only relevant columns
+# x <- x[, names(x) %in% c('Depth', 'Seagrass')]
+# 
+# # save 
 # writeSpatialShape(
 #   x = x, 
 #   fn = paste0('seagrass_gis/', names(shps)[ind])

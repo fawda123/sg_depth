@@ -116,11 +116,13 @@ shinyServer(function(input, output) {
 				ylab('Latitude') + 
 				xlab('Longitude') +
 			  ggtitle('Depth of col (m)') +
-    		theme(legend.position = c(0,0), legend.justification = c(0, 0)) + 
+    		theme(legend.position = c(0,0), legend.justification = c(0, 0),
+          text = element_text(size=20)
+          ) + 
 				scale_size_continuous(name = "Depth estimate", 
 					breaks = brks, 
 					labels = labs,
-					range = c(1, 12)) + 
+					range = c(4, 18)) + 
 				scale_colour_gradient(name = "Depth estimate", 
 					breaks = brks, 
 					labels = labs) + 
@@ -163,7 +165,8 @@ shinyServer(function(input, output) {
           colour = 'red', 
           size = 0.3, 
           alpha = 0.7
-        )
+        ) + 
+        theme(text = element_text(size=20))
       
       # plot points wiht point labels if true
       if(point_lab) {
@@ -225,7 +228,8 @@ shinyServer(function(input, output) {
 			 	ylab('Cumulative points') +
 			  xlab('Depth (m)') +
 			  scale_colour_manual('Point category', values = rev(cols)) +
-			  theme(legend.position = c(0, 1), legend.justification = c(0,1))
+			  theme(legend.position = c(0, 1), legend.justification = c(0,1),
+          text = element_text(size=20))
 			
 			##
 			# plot slope of cumulative point curves
@@ -254,18 +258,23 @@ shinyServer(function(input, output) {
 				scale_colour_manual('Slope category', 
 			  	values = c(cols[2], cols[1], cols[2])
 			  	) +
-			  theme(legend.position = c(1, 1), legend.justification = c(1, 1))
+			  theme(legend.position = c(1, 1), legend.justification = c(1, 1),
+          text = element_text(size=20))
 			
 			##
     	# combine all plot
       
+      # add title to p1
+      p1 <- p1 + ggtitle(act_ests)
+      
+      # arrange as grobs
 			grid.arrange(p1,
 				arrangeGrob(p2, p3, ncol = 2), 
-				ncol = 1, heights = c(1.5, 1.5),
-				main = act_ests)
+				ncol = 1, heights = c(1.5, 1.5)
+			)
       
     }
     
-    },height = 600, width = 700)
+    },height = 900, width = 900)
 
     })

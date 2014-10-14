@@ -12,9 +12,12 @@ shinyUI(pageWithSidebar(
     selectInput("segment", 
                 label = h3("Select segment"), 
                 choices = list(
-                  "Old Tampa Bay 902" = "902", 
-                  "Big Bend 820" = "820"),
-                  selected = "902"),
+                  "Big Bend 820 (2006)" = "820",
+                  "Choctawhatchee Bay 303 (2007)" = "303",
+                  "Indian River Lagoon 1502 (2009)" = "1502",
+                  "Old Tampa Bay 902 (2010)" = "902"
+                  ),
+                  selected = "820"),
     
     numericInput("grid_spc", 
                  label = h3("Grid spacing (dec. deg.)"), 
