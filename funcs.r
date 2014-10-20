@@ -32,7 +32,7 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass',
 	
 	##
 	# estimate a logistic growth function for the data
-	resps <- c('dep_cum', 'sg_cum')
+	resps <- c('sg_prp')
 	pred_ls <- vector('list', length(resps))
 	names(pred_ls) <- resps
 	for(resp in resps){
@@ -44,20 +44,15 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass',
 		Asym <- max(pts[, resp], na.rm = T)
 		xmid <- median(pts$Depth, na.rm = T)
 		scal <- quantile(pts$Depth, 0.75, na.rm = T) - xmid
-		form_in <- substitute(x ~ SSlogis(Depth, Asym,  xmid, scal), list(x = as.name(resp)))
-
-#			# Gompertz
-# 		Asym <- max(pts[, resp], na.rm = T)
-# 		b2 <- median(pts$Depth, na.rm = T)
-# 		b3 <- b3
-# 		form_in <- substitute(x ~ SSgompertz(Depth, Asym, b2, b3), list(x = as.name(resp)))
+		form_in <- substitute(x ~ SSlogis(Depth, Asym,  xmid, scal), 
+      list(x = as.name(resp)))
 
 		# model
 		mod <- try(nls(form_in, data = pts, na.action = na.exclude))
 		
     # values for prediction
 		dep_rng <- range(pts[, 'Depth'], na.rm = T)
-		new.x <- seq(dep_rng[1], dep_rng[2], length = 100)
+		new.x <- seq(dep_rng[1], dep_rng[2], length = 500)
 	
     # return NAs if model fail, else get model predictions
     if('try-error' %in% class(mod)) {
@@ -69,38 +64,25 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass',
 		
 	}
 	
+  # output
 	preds <- data.frame(Depth = new.x, do.call('cbind', pred_ls))
-
-	# add slope ests to pts, use differences
-	preds$dep_slo <- with(preds, c(NA, diff(dep_cum)/diff(Depth)))
-	preds$sg_slo <- with(preds, c(NA, diff(sg_cum)/diff(Depth)))
 	
-	# add threshold data based on proportion of dep_slo 
-	threshs <- sapply(1:length(thresh), 
-		FUN = function(x) thresh[x] * preds[, 'dep_slo']
-		)
-	threshs <- data.frame(threshs)
-	names(threshs) <- paste('Threshold', thresh)
-	
-  # output
-	preds <- data.frame(preds, threshs)
-	
-	# calculate depth of col
-	doc <- sapply(thresh, 
-		FUN = function(x){
-			
-			col <- preds[, grep(x, names(preds))]
-			ind <- with(preds,  sg_slo <= col)
-      ind <- max(which(!ind)) + 1
-			preds[ind, 'Depth']
-			
-			}
-		)
-  # output
-	names(doc) <- thresh
+# 	# calculate depth of col
+# 	doc <- sapply(thresh, 
+# 		FUN = function(x){
+# 			
+# 			col <- preds[, grep(x, names(preds))]
+# 			ind <- with(preds,  sg_slo <= col)
+#       ind <- max(which(!ind)) + 1
+# 			preds[ind, 'Depth']
+# 			
+# 			}
+# 		)
+#   # output
+# 	names(doc) <- thresh
 
   # all output
-	return(list(data = pts, preds = preds, ests = doc))
+	return(list(data = pts, preds = preds))#, ests = doc))
 	  
 }
 

@@ -5,9 +5,3 @@ Materials for seagrass depth of colonization estimates using a spatially-referen
 ## to do
 
 correction to mean sea level given reference of tidal datum of bath points - Old Port Tampa 8726607
-
-Fix depth of col estimates on ascending portion of curve
-
-Add checkbox for point number
-
-Include other segments

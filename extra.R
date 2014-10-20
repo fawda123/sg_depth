@@ -27,12 +27,12 @@ theme_set(theme_bw())
 # plotting code
 
 # for debugging
-segment <- '902'
-grid_spc <- 0.005
+segment <- '820'
+grid_spc <- 0.02
 grid_seed <- 1234
-test_point <- 299
-radius <- 0.025
-thresh <- 0.2   	
+test_point <- 1
+radius <- 0.04
+thresh <- 0.1   	
 
 # get data from loaded shapefiles and input segment
 seg_shp <- shps[[paste0('seg_', segment, '.shp')]]
@@ -82,73 +82,19 @@ est_pts <- data.frame(buff_pts)
 # data
 dat <- doc_est(est_pts, thresh = thresh)
 
-# actual ests
-act_ests <- dat$ests
-
-# format estimate for plot title
-if(any(is.na(act_ests))){ act_ests <- 'Depth of col: Not estimable'
-} else { 
-	act_ests <- paste('Depth of col:', round(act_ests, 1), 'm')
-	}
-
 ##
-# simple plot of points by depth, all pts and those with seagrass
+# plot proportion occupied curve
+
 to_plo <- dat$data
-to_plo <- melt(to_plo, id.var = 'Depth', 
-	measure.var = c('dep_cum', 'sg_cum'))
-to_plo$variable <- factor(to_plo$variable, levels = c('dep_cum', 'sg_cum'), 
-                            labels = c('All', 'Seagrass'))
-
 to_plo2 <- dat$preds
-to_plo2 <- melt(to_plo2, id.var = 'Depth', 
-	measure.var = grep('dep_cum|sg_cum', names(to_plo2), value = T)
-	)
-to_plo2$variable <- factor(to_plo2$variable, 
-	levels = c('dep_cum', 'sg_cum'),
-	labels = c('All', 'Seagrass')
-)
 
-cols  <- c('lightgreen', 'lightblue')
-linesz <- 1
-
-p2 <- ggplot(to_plo2, aes(x = Depth, y = value, group = variable,
-                         colour = variable)) +
-  geom_line(size = linesz) +
-	geom_point(data = to_plo, aes(x = Depth, y = value, group = variable, 
-		colour = variable)) +
- 	ylab('Cumulative points') +
-  xlab('Depth (m)') +
-  scale_colour_manual('Point category', values = rev(cols)) +
-  theme(legend.position = c(0, 1), legend.justification = c(0,1))
-
-##
-# plot slope of cumulative point curves
-
-# treshold label for legend
-thresh_lab <- paste0(round(100 * thresh), '% of all')
-
-to_plo <- dat$preds
-to_plo <- melt(to_plo, id.var = 'Depth', 
-	measure.var = grep('dep_slo|sg_slo|Threshold', names(to_plo), value = T)
-	)
-to_plo$variable <- factor(to_plo$variable)
-to_plo$variable <- factor(to_plo$variable, 
-	levels = c('dep_slo', 'sg_slo', grep('Thresh', levels(to_plo$variable), value = T)),
-	labels = c('All', 'Seagrass', thresh_lab)
-)
-
-p3 <- ggplot(to_plo, aes(x = Depth, y = value,
-		colour = variable, linetype = variable)) +
-	geom_line(size = linesz) +
- 	ylab('CDF Slope') +
-  xlab('Depth (m)') +
-	scale_linetype_manual('Slope category', 
-		values = c('solid', 'solid', 'dashed')
-		) + 
-	scale_colour_manual('Slope category', 
-  	values = c(cols[2], cols[1], cols[2])
-  	) +
-  theme(legend.position = c(1, 1), legend.justification = c(1, 1))
+p2 <- ggplot(to_plo, aes(x = Depth, y = sg_prp)) +
+	geom_point(pch = 1, size = 2) +
+  geom_line(data = to_plo2, 
+    aes(x = Depth, y = sg_prp)
+    ) +
+ 	ylab('Proportion of points with seagrass') +
+  xlab('Depth (m)')
 
 ##
 # combine all plots

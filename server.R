@@ -150,7 +150,11 @@ shinyServer(function(input, output) {
       test_pt <- pts[test_point, ]
   
       # get bathym points around test_pt
-      buff_pts <- buff_ext(sgpts_shp, test_pt, buff = radius)
+      # added try exception for reservecontrols
+      buff_pts <- try({
+        buff_ext(sgpts_shp, test_pt, buff = radius)
+      }, silent = T)
+      if('try-error' %in% class(buff_pts)) return()
       
       p1 <- ggplot(seg_shp, aes(long, lat)) + 
         geom_polygon(fill = 'white') +
@@ -191,85 +195,23 @@ shinyServer(function(input, output) {
 			# data
 			dat <- doc_est(est_pts, thresh = thresh)
 			
-			# actual ests
-			act_ests <- dat$ests
-			
-			# format estimate for plot title
-			if(any(is.na(act_ests))){ act_ests <- 'Depth of col: Not estimable'
-			} else { 
-				act_ests <- paste('Depth of col:', round(act_ests, 1), 'm')
-				}
-			
 			##
 			# simple plot of points by depth, all pts and those with seagrass
-			to_plo <- dat$data
-			to_plo <- melt(to_plo, id.var = 'Depth', 
-				measure.var = c('dep_cum', 'sg_cum'))
-			to_plo$variable <- factor(to_plo$variable, levels = c('dep_cum', 'sg_cum'), 
-			                            labels = c('All', 'Seagrass'))
-			
-			to_plo2 <- dat$preds
-			to_plo2 <- melt(to_plo2, id.var = 'Depth', 
-				measure.var = grep('dep_cum|sg_cum', names(to_plo2), value = T)
-				)
-			to_plo2$variable <- factor(to_plo2$variable, 
-				levels = c('dep_cum', 'sg_cum'),
-				labels = c('All', 'Seagrass')
-			)
-			
-			cols  <- c('lightgreen', 'lightblue')
-			linesz <- 1
-			
-			p2 <- ggplot(to_plo2, aes(x = Depth, y = value, group = variable,
-			                         colour = variable)) +
-			  geom_line(size = linesz) +
-				geom_point(data = to_plo, aes(x = Depth, y = value, group = variable, 
-					colour = variable)) +
-			 	ylab('Cumulative points') +
-			  xlab('Depth (m)') +
-			  scale_colour_manual('Point category', values = rev(cols)) +
-			  theme(legend.position = c(0, 1), legend.justification = c(0,1),
-          text = element_text(size=20))
-			
-			##
-			# plot slope of cumulative point curves
-			
-			# treshold label for legend
-			thresh_lab <- paste0(round(100 * thresh), '% of all')
-			
-			to_plo <- dat$preds
-			to_plo <- melt(to_plo, id.var = 'Depth', 
-				measure.var = grep('dep_slo|sg_slo|Threshold', names(to_plo), value = T)
-				)
-			to_plo$variable <- factor(to_plo$variable)
-			to_plo$variable <- factor(to_plo$variable, 
-				levels = c('dep_slo', 'sg_slo', grep('Thresh', levels(to_plo$variable), value = T)),
-				labels = c('All', 'Seagrass', thresh_lab)
-			)
-			
-			p3 <- ggplot(to_plo, aes(x = Depth, y = value,
-					colour = variable, linetype = variable)) +
-				geom_line(size = linesz) +
-			 	ylab('CDF Slope') +
-			  xlab('Depth (m)') +
-				scale_linetype_manual('Slope category', 
-					values = c('solid', 'solid', 'dashed')
-					) + 
-				scale_colour_manual('Slope category', 
-			  	values = c(cols[2], cols[1], cols[2])
-			  	) +
-			  theme(legend.position = c(1, 1), legend.justification = c(1, 1),
-          text = element_text(size=20))
-			
-			##
-    	# combine all plot
+      to_plo <- dat$data
+      to_plo2 <- dat$preds
       
-      # add title to p1
-      p1 <- p1 + ggtitle(act_ests)
-      
+      p2 <- ggplot(to_plo, aes(x = Depth, y = sg_prp)) +
+        geom_point(pch = 1, size = 4) +
+        geom_line(data = to_plo2, 
+          aes(x = Depth, y = sg_prp)
+          ) +
+       	ylab('Proportion of points with seagrass') +
+        xlab('Depth (m)') +
+        theme(text = element_text(size=20))
+
       # arrange as grobs
 			grid.arrange(p1,
-				arrangeGrob(p2, p3, ncol = 2), 
+				arrangeGrob(p2, ncol = 1), 
 				ncol = 1, heights = c(1.5, 1.5)
 			)
       

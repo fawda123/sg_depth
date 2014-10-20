@@ -1,6 +1,6 @@
 # # library path
-# .libPaths('C:\\Users\\mbeck\\R\\library')
-# 
+.libPaths('C:\\Users\\mbeck\\R\\library')
+
 # # startup message
 # cat('Seagrass...\n')
 # 
@@ -21,7 +21,7 @@
 # library(rgeos)
 # library(gridExtra)
 # library(shinyapps)
-# 
+
 # # functions to use
 # source('funcs.r')
 # 
