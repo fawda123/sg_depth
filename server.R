@@ -55,7 +55,6 @@ shinyServer(function(input, output) {
 #     test_point <- 1
 #     point_lab <- T
 #     radius <- 0.04
-#  		thresh <- 0.1   	
 #     show_all <- F
     
     # input from ui
@@ -65,7 +64,6 @@ shinyServer(function(input, output) {
     test_point <- input$test_point
     point_lab <- input$point_lab
     radius <- input$radius
-  	thresh <- input$thresh
     show_all <- input$show_all
     
     # get data from loaded shapefiles and input segment
@@ -75,8 +73,10 @@ shinyServer(function(input, output) {
     # random points  
     set.seed(grid_seed)
     pts <- grid_est(seg_shp, spacing = grid_spc)
+  
+#     browser()
     
-    if(show_all){
+    if(show_all != 'nope'){
       
     	# get estimates for each point
       maxd <- list()
@@ -86,7 +86,7 @@ shinyServer(function(input, output) {
         ests <- try({
           buff_pts <- buff_ext(sgpts_shp, eval_pt, buff = radius)
       	  est_pts <- data.frame(buff_pts)
-          doc_single <- doc_est(est_pts, thresh = thresh )$ests
+          doc_single <- doc_est(est_pts)[[show_all]]
           doc_single
         })
       	if('try-error' %in% class(ests)) ests <- NA
@@ -115,7 +115,7 @@ shinyServer(function(input, output) {
 			  coord_equal() +
 				ylab('Latitude') + 
 				xlab('Longitude') +
-			  ggtitle('Depth of col (m)') +
+			  ggtitle('Depth (m)') +
     		theme(legend.position = c(0,0), legend.justification = c(0, 0),
           text = element_text(size=20)
           ) + 
@@ -189,26 +189,74 @@ shinyServer(function(input, output) {
         )}
       
     	##
-     	# get data used to estimate depth of col
+     	# get data used to estimate depth of col for plotting
 			est_pts <- data.frame(buff_pts)
-			
-			# data
-			dat <- doc_est(est_pts, thresh = thresh)
-			
-			##
-			# simple plot of points by depth, all pts and those with seagrass
-      to_plo <- dat$data
-      to_plo2 <- dat$preds
       
+#       browser() 
+      
+			# data
+			dat <- doc_est(est_pts)
+			to_plo <- dat$data
+      
+      # base plot if no estimate is available
       p2 <- ggplot(to_plo, aes(x = Depth, y = sg_prp)) +
         geom_point(pch = 1, size = 4) +
-        geom_line(data = to_plo2, 
-          aes(x = Depth, y = sg_prp)
-          ) +
-       	ylab('Proportion of points with seagrass') +
-        xlab('Depth (m)') +
-        theme(text = element_text(size=20))
+        theme(text = element_text(size=20)) +
+        ylab('Proportion of points with seagrass') +
+        xlab('Depth (m)')
 
+      # get y value from est_fun for sg_max and doc_med
+      yends <- try({
+        with(dat, est_fun(c(sg_max, doc_med)))
+        })
+      
+      # add to baseplot if estimate is available
+      if(!'try-error' %in% class(yends)){
+      
+        ##
+  			# simple plot of points by depth, all pts and those with seagrass
+        to_plo2 <- dat$preds
+        to_plo3 <- dat$est_fun
+        to_plo4 <- data.frame(
+          Depth = with(dat, c(sg_max, doc_med, doc_max)), 
+          yvals = rep(0, 3)
+        )
+        
+        # some formatting crap
+        x_lims <- max(1.1 * max(na.omit(to_plo)$Depth), 1.1 * dat$doc)
+        pt_cols <- brewer.pal(nrow(to_plo4), 'Blues')
+        leg_lab <- paste0(
+          c('SG max (', 'DOC med (', 'DOC max ('),
+          round(to_plo4$Depth, 2), 
+          rep(')', 3)
+        )
+      
+        # the plot
+        p2 <- p2 +
+          geom_line(data = to_plo2, 
+            aes(x = Depth, y = sg_prp)
+            ) +
+          scale_y_continuous(limits = c(0, 1.1 * max(to_plo2$sg_prp))) + 
+          scale_x_continuous(limits = c(min(to_plo$Depth), 1.1 * x_lims)) + 
+          stat_function(fun = to_plo3, colour = 'lightgreen', size = 1.5, 
+            alpha = 0.6) +
+          geom_segment(x = dat$sg_max, y = 0, xend = dat$sg_max, 
+            yend = yends[1], linetype = 'dashed', colour = 'lightgreen',
+            size = 1.5, alpha = 0.6) +
+          geom_segment(x = dat$doc_med, y = 0, xend = dat$doc_med, 
+            yend = yends[2], linetype = 'dashed', colour = 'lightgreen',
+            size = 1.5, alpha = 0.6) +
+          geom_point(data = to_plo4, 
+            aes(x = Depth, y = yvals, fill = factor(Depth)), 
+            size = 6, pch = 21) +
+          scale_fill_brewer('Depth estimate (m)', 
+            labels = leg_lab,
+            palette = 'Blues'
+            ) +
+          theme(legend.position = c(1, 1),
+            legend.justification = c(1, 1)) 
+      }
+      
       # arrange as grobs
 			grid.arrange(p1,
 				arrangeGrob(p2, ncol = 1), 

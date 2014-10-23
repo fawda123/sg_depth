@@ -7,9 +7,7 @@
 # 'dat_in' is data from 'buff_ext'
 # 'depth_var' is name of depth column in input data
 # 'sg_var' is name of seagrass column in input data
-# 'thresh' is numeric threshold value for estimating depth of col
-doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass',
-  thresh = 0.1){
+doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass', sg_cat = c('Continuous', 'Discontinuous')){
   
 	# order by depth, assumes column is negative
   dat_in <- dat_in[order(dat_in[, depth_var], decreasing = T), ]
@@ -17,12 +15,16 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass',
 	
 	# cumulative sum of pts with all seagrass and all points
 	# assumes NA is empty
-	sg_pts <- table(dat_in[!is.na(dat_in[, sg_var]), depth_var])
+	sg_pts <- table(dat_in[dat_in[, sg_var] %in% sg_cat, depth_var])
+  
+  # stop function if no seagrass found
+  if(length(sg_pts) == 0) stop('No seagrass present')
+  
 	sg_pts <- data.frame(Depth = names(sg_pts), sg_pts = as.numeric(sg_pts),
-		sg_cum = cumsum(sg_pts), row.names = 1:length(sg_pts))
+		row.names = 1:length(sg_pts))
 	dep_pts <- table(dat_in[, depth_var])
 	dep_pts <- data.frame(Depth = names(dep_pts), dep_pts = as.numeric(dep_pts), 
-		dep_cum = cumsum(dep_pts), row.names = 1:length(dep_pts))
+		row.names = 1:length(dep_pts))
 	
 	# combine all pts and seagrass pts, depth as numeric
 	pts <- merge(dep_pts, sg_pts, by = 'Depth', all.x = T)
@@ -35,6 +37,7 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass',
 	resps <- c('sg_prp')
 	pred_ls <- vector('list', length(resps))
 	names(pred_ls) <- resps
+  asym_ls <- pred_ls
 	for(resp in resps){
 		
 		##
@@ -57,33 +60,71 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass',
     # return NAs if model fail, else get model predictions
     if('try-error' %in% class(mod)) {
       pred_ls[[resp]] <- rep(NA_real_, length = length(new.x))
+      asym_ls[[resp]] <- NA_real_
     } else {
-		pred_ls[[resp]] <- as.numeric(predict(mod, 
-			newdata = data.frame(Depth = new.x)))
+		  pred_ls[[resp]] <- as.numeric(predict(mod, 
+			  newdata = data.frame(Depth = new.x)))
+      asym_ls[[resp]] <- summary(mod)$coefficients['Asym', 'Estimate']
     }
 		
 	}
 	
   # output
 	preds <- data.frame(Depth = new.x, do.call('cbind', pred_ls))
-	
-# 	# calculate depth of col
-# 	doc <- sapply(thresh, 
-# 		FUN = function(x){
-# 			
-# 			col <- preds[, grep(x, names(preds))]
-# 			ind <- with(preds,  sg_slo <= col)
-#       ind <- max(which(!ind)) + 1
-# 			preds[ind, 'Depth']
-# 			
-# 			}
-# 		)
-#   # output
-# 	names(doc) <- thresh
+	asym <- unlist(asym_ls)
+  
+  ##
+	# calculate depth of col using inflection point
+  
+  # out put vals
+  est_fun <- NA
+  sg_max <- NA
+  doc_med <- NA
+  doc_max <- NA
+  
+  # if no curve fit
+  if(sum(is.na(preds$sg_prp)) == nrow(preds)){
+    
+    return(list(data = pts, preds = preds, est_fun = est_fun, 
+      sg_max = sg_max, doc_max = doc_max, doc_med = doc_med))
+     
+  }
+  
+  # check if curve is monotonic descending
+  if(!with(preds, all(sg_prp == cummin(sg_prp)))){
+    
+    return(list(data = pts, preds = preds, est_fun = est_fun, 
+      sg_max = sg_max, doc_max = doc_max, doc_med = doc_med))
+    
+  }
+  
+  # search for inflection point if monotonic descending and curve is fit
 
+  # first deriv
+  inflect <- diff(preds$sg_prp)/diff(preds$Depth)
+  ind_min <- which.min(inflect)
+    
+  # get curve estimate if the minimum slope is not the last value
+  if(ind_min != (nrow(preds) - 1)){
+    
+    inflect_val <- preds[ind_min + 1, ]
+    slope_val <- inflect[ind_min]
+    int_val <- inflect_val$sg_prp - slope_val * inflect_val$Depth
+    est_fun <- function(x) slope_val * x + int_val
+    doc_max <- -1 * int_val / slope_val
+    
+    # get doc_med, halfway between sg_max and doc_max
+    # sg_max is based on asymptote intercept with linear reg
+    # sg_max defaults to zero if value is extrapolated
+    sg_max <- max(c(0, (asym - int_val)/slope_val))
+    doc_med  <- sg_max + ((doc_max - sg_max)/2)
+
+  }
+    
   # all output
-	return(list(data = pts, preds = preds))#, ests = doc))
-	  
+  return(list(data = pts, preds = preds, est_fun = est_fun, 
+    sg_max = sg_max, doc_max = doc_max, doc_med = doc_med))
+    
 }
 
 #######

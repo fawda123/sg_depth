@@ -17,7 +17,7 @@ shinyUI(pageWithSidebar(
                   "Indian River Lagoon 1502 (2009)" = "1502",
                   "Old Tampa Bay 902 (2010)" = "902"
                   ),
-                  selected = "820"),
+                  selected = "303"),
     
     numericInput("grid_spc", 
                  label = h3("Grid spacing (dec. deg.)"), 
@@ -34,7 +34,7 @@ shinyUI(pageWithSidebar(
 
     checkboxInput("point_lab", 
                   label = "Label points as numbers",
-                  value = T),
+                  value = F),
     
     numericInput("radius", 
                  label = h3('Radius (dec. deg.)'), 
@@ -42,18 +42,15 @@ shinyUI(pageWithSidebar(
                  max=2, 
                  value=0.04, step = 0.01),
     
-  	numericInput("thresh",
-  							label = h3('Slope threshold\n(Proportion of all)'), 
-                 min=0.01, 
-                 max=0.5, 
-                 value=0.1, step = 0.01),
-   
-  	
-    h3("Show all estimates"), 
-    
-    checkboxInput("show_all", 
-                  label = '',
-                  value = FALSE)
+    selectInput("show_all", 
+            label = h3("Show all esimates"), 
+            choices = list(
+              "No" = "nope",
+              "Depth with maximum seagrass" = "sg_max",
+              "Median depth of colonization" = "doc_med",
+              "Maximum depth of colonization" = "doc_max"
+              ),
+              selected = "nope")
     
 #     submitButton("Submit")
     

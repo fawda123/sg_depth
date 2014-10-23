@@ -41,37 +41,42 @@
 #   fn = 'M:/GIS/seagrass/sg_segs.shp'
 #   )
 # 
-# ######
-# # renaming columns for shiny app
-# # convert to positive depth values
-# # floor depth values at zero
-# 
-# to_load <- list.files('seagrass_gis', '\\.shp$')
-# shps <- vector('list', length = length(to_load))
-# names(shps) <- to_load
-# for(i in to_load) 
-#   shps[[i]] <- readShapeSpatial(paste0('seagrass_gis/', i))
-# 
-# shps <- shps[grep('^sgpts', names(shps))]
-# 
-# # which file to convert
-# ind <- 2
-# x <- shps[[ind]]
-# 
-# # rename depth, seagrass columns, specific to each file
+######
+# renaming columns for shiny app
+# convert to positive depth values
+# floor depth values at zero
+
+to_load <- list.files('seagrass_gis', '\\.shp$')
+shps <- vector('list', length = length(to_load))
+names(shps) <- to_load
+for(i in to_load) 
+  shps[[i]] <- readShapeSpatial(paste0('seagrass_gis/', i))
+
+shps <- shps[grep('^sgpts', names(shps))]
+
+# which file to convert
+ind <- 4
+x <- shps[[ind]]
+
+# rename depth, seagrass columns, specific to each file
 # names(x)
 # names(x)[names(x) %in% 'depth'] <- 'Depth'
 # names(x)[names(x) %in% 'SEAGRASS'] <- 'Seagrass'
-# 
-# # depth as positive, floor to zero
-# # x$Depth <- pmax(0, x$Depth)
+
+# depth as positive, floor to zero
+# x$Depth <- pmax(0, x$Depth)
 # x$Depth <- pmax(0, -1 * x$Depth)
-# 
-# # retain only relevant columns
-# x <- x[, names(x) %in% c('Depth', 'Seagrass')]
-# 
-# # save 
-# writeSpatialShape(
-#   x = x, 
-#   fn = paste0('seagrass_gis/', names(shps)[ind])
-#   )
+
+# retain only relevant columns
+x <- x[, names(x) %in% c('Depth', 'Seagrass')]
+
+# convert seagrass values to 'Continuous', 'Discontinuous'
+# for IRL, 9113 is Patchy, 9116 is continuous, see docs on L drive
+# newlevs <- c('Continuous', 'Discontinuous')
+# levels(x$Seagrass) <- newlevs
+
+# save 
+writeSpatialShape(
+  x = x, 
+  fn = paste0('seagrass_gis/', names(shps)[ind])
+  )
