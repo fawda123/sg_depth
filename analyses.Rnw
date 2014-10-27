@@ -31,6 +31,148 @@ opts_chunk$set(fig.path = 'figs/', fig.align='center', fig.show='hold',message=F
 options(replace.assign=TRUE,width=90,digits=1)
 @
 
+% example of buffer points for depth of col
+<<buff_ex, cache = T, echo = F, message = F, results = 'hide'>>=
+library(ggplot2)
+source('funcs.r')
+
+seg <- maptools::readShapeSpatial('dat/seg_820.shp')
+state <- maptools::readShapeSpatial('dat/FL_state.shp')
+sgpoly <- maptools::readShapeSpatial('dat/bbend_sg_diss.shp')
+sgrass <- maptools::readShapeSpatial('dat/sgpts_820_2006_buff.shp')
+
+set.seed(1234)
+est_pts <- grid_est(seg, spacing = 0.02)
+test_pt <- est_pts[26, ]
+
+buff_pts <- buff_ext(sgrass, test_pt, buff = 0.05)
+
+doc_in <- data.frame(buff_pts)
+doc_in$GRID_CODE <- -1 * doc_in$GRID_CODE
+doc <- doc_est(doc_in, 'GRID_CODE', 'SEAGRASS')
+ests <- doc$doc_max
+
+p1 <- ggplot(seg, aes(long, lat)) + 
+  geom_polygon(fill = 'white') +
+  geom_path(color = 'black') +
+  theme_classic() +
+  coord_equal() +
+	xlab('Longitude') +
+	ylab('Latitude') +
+  geom_point(
+          data = data.frame(est_pts), 
+          aes(Var1, Var2, colour = 'grid', size = 'grid', pch = 'grid'),
+        ) +
+  geom_point(
+    data = data.frame(buff_pts),
+    aes(coords.x1, coords.x2, colour = 'buff', size = 'buff', pch = 'buff')
+  ) + 
+  geom_point(
+    data = data.frame(test_pt),
+    aes(Var1, Var2, colour = 'test', size = 'test', pch = 'test'),
+  ) +
+  scale_colour_manual('Points', labels = c('Sampled depth pts near test', 'Sample grid', 'Test pt'), values = c('red', 'black', 'black')) +
+  scale_size_manual('Points', labels = c('Sampled depth pts near test', 'Sample grid', 'Test pt'), values = c(0.5, 3, 4)) +
+  scale_shape_manual('Points', labels = c('Sampled depth pts near test', 'Sample grid', 'Test pt'), values = c(16, 1, 16)) +
+  theme(text = element_text(size=20), 
+    legend.position = c(0,0), legend.justification = c(0,0))
+
+pdf('figs/buff_ex.pdf', height = 6, width = 6, family = 'serif')
+
+print(p1)
+
+dev.off()
+    
+@
+
+% example of estimating seagrass depth of colonization
+<<est_ex, cache = T, echo = F, results = 'hide'>>=
+library(ggplot2)
+library(RColorBrewer)
+source('funcs.r')
+
+seg <- maptools::readShapeSpatial('dat/seg_820.shp')
+state <- maptools::readShapeSpatial('dat/FL_state.shp')
+sgpoly <- maptools::readShapeSpatial('dat/bbend_sg_diss.shp')
+sgrass <- maptools::readShapeSpatial('dat/sgpts_820_2006_buff.shp')
+# sgrass <- sgrass[sample(1:nrow(sgrass), 2000, replace = F),]
+
+set.seed(1234)
+est_pts <- grid_est(seg, spacing = 0.02)
+test_pt <- est_pts[26, ]
+
+buff_pts <- buff_ext(sgrass, test_pt, buff = 0.05)
+
+doc_in <- data.frame(buff_pts)
+doc_in$GRID_CODE <- -1 * doc_in$GRID_CODE
+doc <- doc_est(doc_in, 'GRID_CODE', 'SEAGRASS')
+
+##
+# data for plots
+dat <- doc
+to_plo <- dat$data
+to_plo2 <- dat$preds
+to_plo3 <- dat$est_fun
+to_plo4 <- data.frame(
+  Depth = with(dat, c(sg_max, doc_med, doc_max)), 
+  yvals = rep(0, 3)
+)
+
+# some formatting crap
+x_lims <- max(1.1 * max(na.omit(to_plo)$Depth), 1.1 * dat$doc)
+pt_cols <- brewer.pal(nrow(to_plo4), 'Blues')
+leg_lab <- paste0(
+  c('SG max (', 'DOC med (', 'DOC max ('),
+  round(to_plo4$Depth, 2), 
+  rep(')', 3)
+)
+
+# base plot if no estimate is available
+pa <- ggplot(to_plo, aes(x = Depth, y = sg_prp)) +
+  geom_point(pch = 1, size = 3) +
+  theme_bw() +
+  ylab('Proportion of points with seagrass') +
+  xlab('Depth (m)') +
+  scale_y_continuous(limits = c(0, 1.1 * max(to_plo2$sg_prp))) + 
+  scale_x_continuous(limits = c(0, 1.1 * x_lims))
+
+# get y value from est_fun for sg_max and doc_med
+yends <- with(dat, est_fun(c(sg_max, doc_med)))
+
+# the plot
+pb <- pa +
+  geom_line(data = to_plo2, 
+    aes(x = Depth, y = sg_prp)
+    )
+pc <- pb +
+  stat_function(fun = to_plo3, colour = 'lightgreen', size = 1.1, 
+    alpha = 0.6) +
+  geom_segment(x = dat$sg_max, y = 0, xend = dat$sg_max, 
+    yend = yends[1], linetype = 'dashed', colour = 'lightgreen',
+    size = 1.1, alpha = 0.6) +
+  geom_segment(x = dat$doc_med, y = 0, xend = dat$doc_med, 
+    yend = yends[2], linetype = 'dashed', colour = 'lightgreen',
+    size = 1.1, alpha = 0.6) +
+  geom_point(data = to_plo4, 
+    aes(x = Depth, y = yvals, fill = factor(Depth)), 
+    size = 4, pch = 21) +
+  scale_fill_brewer('Depth estimate (m)', 
+    labels = leg_lab,
+    palette = 'Blues'
+    ) +
+  theme(legend.position = c(1, 1),
+    legend.justification = c(1, 1)) 
+
+pdf('figs/est_ex.pdf', height = 3, width = 5, family = 'serif')
+
+print(pa)
+print(pb)
+print(pc)
+
+dev.off()
+    
+@
+
 \begin{document}
 
 \setlength{\parskip}{5mm}
@@ -76,11 +218,21 @@ First, an example is provided that illustrates spatial heterogeneity within an i
 
 \subsection{Estimating seagrass depth of colonization using spatial information}
 
-An alternative approach for estimating seagrass \ac{doc} was developed that incorporates spatial information for improved resolution.  The new approach has a similar theoretical foundation as the original, although the methods for estimation are slightly different.  The first difference is that the maximum \ac{doc} is estimated using a cumulative distribution curve.  The second and more important difference is that the estimates are specific to locations using a grid-based approach.  These main differences are described below using an example from the Big Bend region of Florida.                                  
+An alternative approach for estimating seagrass \ac{doc} was developed that incorporates spatial information for improved resolution.  The new approach has a similar theoretical foundation as the original, although the methods for estimation are slightly different.  The first difference is that the maximum \ac{doc} is estimated from a logistic growth curve fit through the data.  The second and more important difference is that the estimates are specific to locations using a grid-based approach.  These main differences are described below using an example from the Big Bend region of Florida.                                  
 
 Input data for estimating spatially-referenced depth of colonization require only two shapefiles: a segment polygon and a point layer of bathymetric soundings and seagrass presence/absence.  The latter shapefile was created using methods in described in Hagy et al. (in prep).  In general, the point layer contains coordinates of bathymetric sounding pounts that were within 1 km of a seagrass coverage layer.  The sounding points were merged with the coverage layer to identify points occurring within seagrass beds.  
 
-The spatially-referenced approach for estimating depth of colonization begins by creating a systematic grid of sampling points at a set distance within the segment polygon.  Points in the seagrass/bathymetric sounding layer that occur within a set radius from each grid point are selected.  An estimate of seagrass \ac{doc} is obtained for each group of selected points and assigned as a spatially-referenced value for each grid point.  The seagrass \ac{doc} estimate for each point is based on the cumulative distribution curve for two sets of information in the data.  The first cumulative distribution describes the cumulative number of all sample points by depth and the second describes the cummulative number of sample points with seagrass by depth.  The \ac{doc} estimate is based on differences in slope between these two curves.  Thus, a second plot is created that compares the slopes by depth for each cumulative distribution curve.  The maximum depth of colonization is estimated from these slope curves when the slope of the seagrass curve is less than 5\% of the slope of the curve for all points.  Likewise, the median depth of colonization is estimated when the slope of the seagrass curve is less than 50\% of the slope of the curve for all points.  Values are not estimated when the seagrass slope curve  
+The spatially-referenced approach for estimating depth of colonization begins by selecting a single sampling point within a grid of sampling points at a set distance within the segment polygon.  Bathymetric soundings that occur within a set radius from each sampling point are selected (\cref{fig:buff_ex}).  An estimate of seagrass \ac{doc} is obtained using the selected points and assigned as a spatially-referenced value to each sampling point.  The seagrass \ac{doc} estimate for each sample point is quantified from the proportion of bathymetric soundings that contain seagrass at each depth bin in the data (\cref{fig:est_ex1}).  A buffer around a sample point that is sufficient to quantify depth of colonization typically has a plot similar to \cref{fig:est_ex1} such that the proportion of points that are occupied by seagrass decreases continuously with increasing depth.  
+
+A decreasing logistic growth curve was then fit to the points to create a monotonic and asymptotic function to estimate depth of colonization.  This curve is fit using non-linear regression to characterize the reduction in points occupied by seagrass as a function of depth.  The logistic growth curve is fit using standard residual sums-of-squares and user-supplied starting parameters that are an approximate estimate of the curve characteristics.  The model has the following form:
+\begin{equation}
+ Proportion = \frac{\alpha}{1 + \mathrm{e}^{{\left(\beta - Depth\right)/\gamma}}}
+\end{equation}
+where the proportion of points occupied by seagrass at each depth is defined by a logistic curve with an asymptote $\alpha$, a midpoint inflection $\beta$, and a scale parameter $\gamma$.    
+
+Finally, a simple linear curve is fit through the inflection point of the logistic curve to estimate depth of colonization (\cref{fig:est_ex3}).  The inflection point is the depth at which seagrass are decreasing at a maximum rate and is the assigned to the slope of the linear curve.  Three measures are obtained from the linear curve. The maximum depth of seagrass colonization, $DOC_{max}$, is the x-axis intercept of the linear curve.  The depth of maximum seagrass occupany, $SG_{max}$ is the location where the linear curve intercepts the asymptote of the logistic growth curve.  Finally, the median depth of seagrass colonization, $DOC_{med}$, is the depth halfway between $SG_{max}$ and $DOC_{max}$.  
+
+The method of estimating each of the three measures applies only under specific scenarios.  First, estimates can only be provided if a sufficient number of points are present within the radius of the sample point to estimate a logistic growth curve.  Second, estimates are only provided if an inflection point is present on the logistic curve within the range of the depth data.  Finally, the estimate for $SG_{max}$ is set to zero if the linear curve through the inflection point intercepts the asympote at x-axis values less than zero.  The estimate for $DOC_{med}$ is also shifted if $SG_{max}$ is zero.  Adding exceptions for instances when depth estimates cannot be calculated provides a safety measure that ensures a sufficient amount of data are used in the calculations.  
 
 \subsection{Sensitivity analysis and comparison with segment-based approach}
 
@@ -93,16 +245,44 @@ The spatially-referenced approach for estimating depth of colonization begins by
 %%%%%%
 % example of depth of col ests for wbid - Old Tampa Bay
 \begin{figure}
-\includegraphics[width = \textwidth]{figs/wbid_doc.pdf}
+\centerline{\includegraphics[width = \textwidth]{figs/wbid_doc.pdf}}
 \caption{Example of over- and under-estimates for seagrass depth of colonization in Old Tampa Bay, Florida.  The top-left figure indicates over-estimation and the bottom-left indicates under-estimation.  Bathymetric points are color-coded by the median depth of colonization estimate for all seagrass (patchy and continuous) in the segment.}
 \label{fig:wbid_doc}
 \end{figure}
 
 % example of depth of col ests for wbid - big bend 820
 \begin{figure}
-\includegraphics[width = \textwidth]{figs/wbid_doc2.pdf}
+\centerline{\includegraphics[width = \textwidth]{figs/wbid_doc2.pdf}}
 \caption{Example of over- and under-estimates for seagrass depth of colonization for a segment in the Big Bend region, Florida.  The top-left figure indicates over-estimation and the bottom-left indicates under-estimation.  Bathymetric points are color-coded by the median depth of colonization estimate for continuous seagrass in the segment.}
 \label{fig:wbid_doc2}
+\end{figure}
+
+% example of depth of col ests for wbid - big bend 820
+\begin{figure}
+\centerline{\includegraphics[width = 0.6\textwidth]{figs/buff_ex.pdf}}
+\caption{Sample grid used to estimate spatially-referenced depth of colonization.  The selected bathymetric/seagrass points that were within a radius of 0.05 decimal degrees from the test point were selected for the estimate.  Estimates can be obtained for each sample grid point and an arbitrary radius.}
+\label{fig:buff_ex}
+\end{figure}
+
+% example of depth of col ests for wbid - big bend 820
+\begin{figure}
+\centering
+\subfloat[][Proportion of points with seagrass by depth]{
+\includegraphics[page=1,width=0.5\textwidth]{figs/est_ex.pdf}
+\label{fig:est_ex1}
+}
+
+\subfloat[][Logistic growth curve fit through points]{
+\includegraphics[page=2,width=0.5\textwidth]{figs/est_ex.pdf}
+\label{fig:est_ex2}
+}
+
+\subfloat[][Depth estimates]{
+\includegraphics[page=3,width=0.5\textwidth]{figs/est_ex.pdf}
+\label{fig:est_ex3}
+}
+\caption{Methods for estimating seagrass depth of colonization. \Cref{fig:est_ex1} is the proportion of points with seagrass by depth using depth points within the buffer of the test point in \cref{fig:buff_ex}.  \Cref{fig:est_ex2} adds a decreasing logistic growth curve fit through the points.  \Cref{fig:est_ex3} shows three depth estimates based on a linear curve fit through the inflection point of logistic growth curve.}
+\label{fig:est_ex}
 \end{figure}
 
 \end{document}
