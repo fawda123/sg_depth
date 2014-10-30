@@ -6,9 +6,10 @@ library(ggplot2)
 library(scales)
 library(RColorBrewer)
 library(rgdal)
-library(rgeos)
+library(gstat)
 library(gridExtra)
 library(sp)
+library(automap)
 
 # functions to use
 source('funcs.r')
@@ -47,15 +48,6 @@ shinyServer(function(input, output) {
   output$simplot <- renderPlot({
     
     # plotting code
-
-#     # for debugging
-#     segment <- '820'
-#     grid_spc <- 0.02
-#     grid_seed <- 1234
-#     test_point <- 1
-#     point_lab <- T
-#     radius <- 0.04
-#     show_all <- F
     
     # input from ui
     segment <- input$segment
@@ -65,6 +57,7 @@ shinyServer(function(input, output) {
     point_lab <- input$point_lab
     radius <- input$radius
     show_all <- input$show_all
+    show_krige <- input$show_krige
     
     # get data from loaded shapefiles and input segment
     seg_shp <- shps[[paste0('seg_', segment, '.shp')]]
@@ -74,8 +67,9 @@ shinyServer(function(input, output) {
     set.seed(grid_seed)
     pts <- grid_est(seg_shp, spacing = grid_spc)
   
-#     browser()
+#     browser() # for debugging
     
+    # all estimates
     if(show_all != 'nope'){
       
     	# get estimates for each point
@@ -97,53 +91,88 @@ shinyServer(function(input, output) {
 			# combine in data frame for plotting
 			maxd <- data.frame(pts, zmax_all = do.call('c', maxd))
     	
-    	# get values for combined legend
-			rngs <- range(maxd$zmax_all, na.rm = T)
-			brks <- seq(rngs[1], rngs[2], length = 5)
-			labs <- format(round(brks, 1), nsmall = 1, digits =1)
-			
-    	# unestimable points to plot
-			unest <- maxd[is.na(maxd[, 'zmax_all']), ]
-			
-    	##
-    	# plot
-    	
-			p1 <- ggplot(seg_shp, aes(long, lat)) + 
-			  geom_polygon(fill = 'white') +
-			  geom_path(color = 'black') +
-			  theme_classic() +
-			  coord_equal() +
-				ylab('Latitude') + 
-				xlab('Longitude') +
-			  ggtitle('Depth (m)') +
-    		theme(legend.position = c(0,0), legend.justification = c(0, 0),
-          text = element_text(size=20)
-          ) + 
-				scale_size_continuous(name = "Depth estimate", 
-					breaks = brks, 
-					labels = labs,
-					range = c(4, 18)) + 
-				scale_colour_gradient(name = "Depth estimate", 
-					breaks = brks, 
-					labels = labs) + 
-			 	guides(colour = guide_legend())
-			   
-      # plot points with point labels if true
-      if(point_lab) {
-        maxd <- data.frame(maxd, labs = row.names(maxd))
-        p1 <- p1 + geom_text(
-			    data = maxd, 
-			    aes(Var1, Var2, label = labs, 
-            size = zmax_all, colour = zmax_all)
-        )
-      } else { 
-        p1 <- p1 + geom_point(
-			    data = maxd, 
-			    aes(Var1, Var2, size = zmax_all, colour = zmax_all)
-			  )}
-      
-			print(p1)
-			      
+      # kriging of all estimates
+      if(show_krige){
+          
+        ##
+        # krige the prediction grid
+        
+        kriged <- sg_krige(maxd, seg_shp)
+        
+        p1 <- ggplot(seg_shp, aes(long, lat)) + 
+    			geom_tile(
+        	  data = kriged, 
+    			  aes(Var1, Var2, fill = maxd)
+          ) +
+          geom_polygon(fill = NA) +
+  			  geom_path(color = 'black') +
+  			  theme_classic() +
+  			  coord_equal() +
+  				ylab('Latitude') + 
+  				xlab('Longitude') +
+          scale_fill_gradientn(
+            name = 'Seagrass depth (m)', 
+            colours = brewer.pal(7, 'Spectral')
+            ) + 
+      		theme(legend.position = c(0,0), legend.justification = c(0, 0),
+            text = element_text(size=20)
+            )
+        
+        print(p1)
+       
+      # no kriging
+      } else {
+        
+      	# get values for combined legend
+  			rngs <- range(maxd$zmax_all, na.rm = T)
+  			brks <- seq(rngs[1], rngs[2], length = 5)
+  			labs <- format(round(brks, 1), nsmall = 1, digits =1)
+  			
+      	##
+      	# plot
+      	
+  			p1 <- ggplot(seg_shp, aes(long, lat)) + 
+  			  geom_polygon(fill = 'white') +
+  			  geom_path(color = 'black') +
+  			  theme_classic() +
+  			  coord_equal() +
+  				ylab('Latitude') + 
+  				xlab('Longitude') +
+  			  ggtitle('Depth (m)') +
+      		theme(legend.position = c(0,0), legend.justification = c(0, 0),
+            text = element_text(size=20)
+            ) + 
+  				scale_size_continuous(name = "Depth estimate", 
+  					breaks = brks, 
+  					labels = labs,
+  					range = c(4, 18)) + 
+  				scale_colour_gradientn(name = "Depth estimate", 
+  					breaks = brks, 
+  					labels = labs,
+            colours = brewer.pal(7, 'Spectral')
+            ) + 
+  			 	guides(colour = guide_legend())
+  			   
+        # plot points with point labels if true
+        if(point_lab) {
+          maxd <- data.frame(maxd, labs = row.names(maxd))
+          p1 <- p1 + geom_text(
+  			    data = maxd, 
+  			    aes(Var1, Var2, label = labs, 
+              size = zmax_all, colour = zmax_all)
+          )
+        } else { 
+          p1 <- p1 + geom_point(
+  			    data = maxd, 
+  			    aes(Var1, Var2, size = zmax_all, colour = zmax_all)
+  			  )
+        }
+        
+  			print(p1)
+        
+      }
+			  
+    # individual estimates
     } else {
     
       # point from random points for buffer

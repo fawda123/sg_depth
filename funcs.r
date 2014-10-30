@@ -188,3 +188,36 @@ buff_ext <- function(pts, center, buff = 0.03){
   return(pts[sel, ])
   
 }
+
+######
+# krige results from spatial grid of seagrass depth of col ests
+#
+# @param maxd data frame of maximum depth estimates with Var1 and Var2 columns of coordinates
+# @param seg_shp spatial polygon data frame of segment to clip kriging estimate
+# @param length number of points on x or y axis for predicting based on kriging results, passed to seq
+#
+# @import automap gstat
+sg_krige <- function(maxd, seg_shp, length = 250){
+  
+  # maxd as spatial data frame
+  maxd <- na.omit(maxd)
+  coordinates(maxd) = ~ Var1 + Var2
+  
+  # new coordinates to predict
+  newdat <- apply(bbox(seg_shp), 1, function(x) seq(x[1], x[2], length = length))
+  newdat <- expand.grid(newdat[, 1], newdat[, 2])
+  gridded(newdat) = ~ Var1 + Var2
+  
+  # kriging results
+  res <- suppressWarnings(autoKrige(zmax_all ~ 1, maxd, newdat))
+  res <- res['krige_output'][[1]]
+  
+  # clip results by segment
+  sel <- !is.na(res %over% seg_shp)[, 1]
+  res <- res[sel, ]
+  res <- data.frame(coordinates(res), maxd = res$var1.pred)
+  
+  # return results
+  return(res)
+  
+}

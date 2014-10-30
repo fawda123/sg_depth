@@ -17,7 +17,7 @@ shinyUI(pageWithSidebar(
                   "Indian River Lagoon 1502 (2009)" = "1502",
                   "Old Tampa Bay 902 (2010)" = "902"
                   ),
-                  selected = "303"),
+                  selected = "820"),
     
     numericInput("grid_spc", 
                  label = h3("Grid spacing (dec. deg.)"), 
@@ -40,19 +40,23 @@ shinyUI(pageWithSidebar(
                  label = h3('Radius (dec. deg.)'), 
                  min=0, 
                  max=2, 
-                 value=0.04, step = 0.01),
+                 value=0.06, step = 0.01),
     
     selectInput("show_all", 
-            label = h3("Show all esimates"), 
+            label = h3("Show all estimates"), 
             choices = list(
               "No" = "nope",
               "Depth with maximum seagrass" = "sg_max",
               "Median depth of colonization" = "doc_med",
               "Maximum depth of colonization" = "doc_max"
               ),
-              selected = "nope")
+              selected = "nope"),
     
-#     submitButton("Submit")
+    checkboxInput("show_krige", 
+              label = "Interpolate smooth surface",
+              value = F),
+
+    submitButton("Submit")
     
   ),
   
