@@ -80,3 +80,44 @@ writeSpatialShape(
   x = x, 
   fn = paste0('seagrass_gis/', names(shps)[ind])
   )
+
+######
+# get secchi data from IWR40 database that correspond to my segments
+# all segs was created in ArcMap
+# 'iwr_40_stations.RData' and 'iwr40_secchi.RData' are raw data from IWR40 access db
+# 
+# # load secchi, station data
+# load(file = 'dat/iwr40_stations.RData')
+# load(file = 'dat/iwr40_secchi.RData')
+# 
+# # merge secchi with lat/long stations info
+# stat <- stat[, c('Station_ID', 'Latitude', 'Longitude')]
+# dat <- merge(secc, stat, by = 'Station_ID', all.x = T)
+# 
+# # remove QAQC flags, retain relevant columns
+# dat <- dat[dat$RCode == '', ]
+# dat <- dat[, c('Station_ID', 'Date_Time', 'Secchi', 'Latitude', 'Longitude')]
+# 
+# # datetimestamp to posix, eastern time, no dst
+# dat$Date_Time <- as.POSIXct(as.character(dat$Date_Time), 
+#   format = '%m/%d/%Y %H:%M:%S', tz = 'America/Jamaica')
+# 
+# ##
+# # load segments from widget, clip stations accordingly
+# library(maptools)
+# library(sp)
+# 
+# # load segs
+# segs <- readShapeSpatial('seagrass_gis/all_segs.shp')
+# 
+# # secchi as spatial points
+# coordinates(dat) <- dat[, c('Longitude', 'Latitude')]
+# dat <- SpatialPoints(dat)
+# 
+# # clip secchi data by segments
+# sel <- !is.na(dat %over% segs)[, 1]
+# dat <- dat[sel, ]
+# 
+# # save
+# secc_seg <- dat
+# save(secc_seg, file = 'dat/secc_seg.RData')
