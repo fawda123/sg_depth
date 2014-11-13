@@ -81,43 +81,126 @@ writeSpatialShape(
   fn = paste0('seagrass_gis/', names(shps)[ind])
   )
 
-######
+#####
 # get secchi data from IWR40 database that correspond to my segments
 # all segs was created in ArcMap
-# 'iwr_40_stations.RData' and 'iwr40_secchi.RData' are raw data from IWR40 access db
-# 
-# # load secchi, station data
-# load(file = 'dat/iwr40_stations.RData')
-# load(file = 'dat/iwr40_secchi.RData')
-# 
-# # merge secchi with lat/long stations info
-# stat <- stat[, c('Station_ID', 'Latitude', 'Longitude')]
-# dat <- merge(secc, stat, by = 'Station_ID', all.x = T)
-# 
-# # remove QAQC flags, retain relevant columns
-# dat <- dat[dat$RCode == '', ]
-# dat <- dat[, c('Station_ID', 'Date_Time', 'Secchi', 'Latitude', 'Longitude')]
-# 
-# # datetimestamp to posix, eastern time, no dst
-# dat$Date_Time <- as.POSIXct(as.character(dat$Date_Time), 
-#   format = '%m/%d/%Y %H:%M:%S', tz = 'America/Jamaica')
-# 
-# ##
-# # load segments from widget, clip stations accordingly
-# library(maptools)
-# library(sp)
-# 
-# # load segs
-# segs <- readShapeSpatial('seagrass_gis/all_segs.shp')
-# 
-# # secchi as spatial points
-# coordinates(dat) <- dat[, c('Longitude', 'Latitude')]
-# dat <- SpatialPoints(dat)
-# 
-# # clip secchi data by segments
-# sel <- !is.na(dat %over% segs)[, 1]
-# dat <- dat[sel, ]
-# 
-# # save
-# secc_seg <- dat
-# save(secc_seg, file = 'dat/secc_seg.RData')
+# 'iwr_40_stations.RData' is station locations from IWR40 access db
+# 'SD.east.txt', 'SD.nw.txt', 'SD.sw.txt' are secchi text files from Jim's work 
+
+# load station data
+load(file = 'dat/iwr40_stations.RData')
+
+# load secchi data
+secc1 <- read.table('dat/SD.east.txt', header = T, sep = '\t', 
+  stringsAsFactors = F)
+secc2 <- read.table('dat/SD.nw.txt', header = T, sep = '\t', 
+  stringsAsFactors = F)
+secc3 <- read.table('dat/SD.sw.txt', header = T, sep = '\t', 
+  stringsAsFactors = F)
+secc <- rbind(secc1, secc2, secc3)
+names(secc)[1] <- 'Station_ID'
+
+# merge secchi with lat/long stations info
+stat <- stat[, c('Station_ID', 'Latitude', 'Longitude')]
+dat <- merge(secc, stat, by = 'Station_ID', all.x = T)
+
+# retain relevant columns
+dat <- dat[!dat$SD.nond, ]
+dat <- dat[, c('Station_ID', 'DateT', 'SD',
+  'Latitude', 'Longitude')]
+
+# remove stations w/o locations
+dat <- dat[!is.na(dat$Latitude), ]
+
+# datetimestamp to posix, eastern time, no dst
+dat$Date <- as.Date(as.character(dat$DateT), format = '%m/%d/%Y')
+dat$DateT <- NULL
+
+##
+# load segments from widget, clip stations accordingly
+library(maptools)
+library(sp)
+
+# load segs
+segs <- readShapeSpatial('seagrass_gis/all_segs.shp')
+
+# secchi as spatial points data frame
+coords <- dat[, c('Longitude', 'Latitude')]
+dat <- dat[, !names(dat) %in% c('Longitude', 'Latitude')]
+coordinates(dat) <- coords
+
+# clip secchi data by segments
+sel <- !is.na(dat %over% segs)[, 1]
+dat <- dat[sel, ]
+
+# save
+secc_seg <- dat
+save(secc_seg, file = 'dat/secc_seg.RData')
+
+######
+# format all shapefiles for tb old tampa bay
+
+# Tampa Bay year folders on L drive were copied to desktop 
+
+# segment polygon
+seg <- readShapeSpatial('seagrass_gis/seg_902.shp')
+seg_buff <- rgeos::gBuffer(seg, width = 0.02)
+
+# list of shapefiles in the directory
+path <- 'C:/Users/mbeck/Desktop/gis_tmp'
+ptfls <- list.files(path, '*\\.shp$', recursive = T, full.names = T)
+
+# manually went through and ided which were sgpts
+inds <- c(4, 8, 11, 14, 17, 20, 23, 27, 31, 35, 38)
+
+# go through each ind
+ind <- 38
+orig <- readShapeSpatial(ptfls[ind])
+
+tmp <- orig
+head(data.frame(tmp))
+  
+# columns to keep
+dep_col <- 'depth'
+sg_col <- 'Descript'
+keep_cols <- c(dep_col, sg_col)
+tmp <- tmp[, keep_cols]
+
+# rename depth, seagrass columns, specific to each file
+names(tmp)
+names(tmp)[names(tmp) %in% dep_col] <- 'Depth'
+names(tmp)[names(tmp) %in% sg_col] <- 'Seagrass'
+
+# depth as positive, floor to zero
+# x$Depth <- pmax(0, x$Depth)
+tmp$Depth <- pmax(0, -1 * tmp$Depth)
+
+# convert seagrass values to 'Continuous', 'Discontinuous'
+levels(tmp$Seagrass)
+newlevs <- c('Continuous', 'Discontinuous')
+levels(tmp$Seagrass) <- newlevs
+
+# extract by buffer
+sel <- !is.na(tmp %over% seg_buff)
+tmp <- tmp[sel, ]
+
+plot(seg_buff)
+points(tmp, col = sample(colors(), 1))
+
+# save 
+ptfls[ind]
+writeSpatialShape(
+  x = tmp, 
+  fn = 'seagrass_gis/sgpts_2010_902.shp'
+  )
+
+######
+# save all shapefiles to RData for quicker load
+# used in shiny
+to_load <- list.files('seagrass_gis', '\\.shp$')
+shps <- vector('list', length = length(to_load))
+names(shps) <- to_load
+for(i in to_load) 
+  shps[[i]] <- readShapeSpatial(paste0('seagrass_gis/', i))
+save(shps, file = 'seagrass_gis/shps.RData')
+

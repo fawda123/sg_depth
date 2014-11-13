@@ -16,11 +16,7 @@ source('funcs.r')
 
 ##
 # load shapefile data
-to_load <- list.files('seagrass_gis', '\\.shp$')
-shps <- vector('list', length = length(to_load))
-names(shps) <- to_load
-for(i in to_load) 
-  shps[[i]] <- readShapeSpatial(paste0('seagrass_gis/', i))
+load('seagrass_gis/shps.RData')
 
 # set ggplot theme
 theme_set(theme_bw())
@@ -32,7 +28,7 @@ shinyServer(function(input, output) {
   # pick test pt once pts are selected
   output$reserveControls <- renderUI({
 
-    seg_shp <- shps[[paste0('seg_', input$segment, '.shp')]]
+    seg_shp <- shps[[paste0('seg_', gsub('^.*_', '', segment), '.shp')]]
     grid_spc <- input$grid_spc
     grid_seed <- input$grid_seed
     set.seed(grid_seed)
@@ -60,7 +56,7 @@ shinyServer(function(input, output) {
     show_krige <- input$show_krige
     
     # get data from loaded shapefiles and input segment
-    seg_shp <- shps[[paste0('seg_', segment, '.shp')]]
+    seg_shp <- shps[[paste0('seg_', gsub('^.*_', '', segment), '.shp')]]
     sgpts_shp <- shps[[grep(paste0('^sgpts.*', segment, '.shp$'), names(shps))]]
     
     # random points  
