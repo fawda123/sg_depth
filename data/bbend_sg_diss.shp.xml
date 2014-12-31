@@ -1,0 +1,1110 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<metadata>
+	<idinfo>
+		<citation>
+			<citeinfo>
+				<origin>Florida Fish and Wildlife Conservation Commission-Fish and Wildlife Research Institute</origin>
+				<pubdate>2010</pubdate>
+				<title>Seagrass Florida</title>
+				<geoform>vector digital data
+</geoform>
+				<onlink>http://research.myfwc.com/
+</onlink>
+				<ftname Sync="TRUE">seagrass_fl_poly</ftname></citeinfo>
+		</citation>
+		<descript>
+			<abstract>This polygon GIS data set represents a compilation of statewide seagrass data from various source agencies and scales.  The data were mapped from sources ranging in date from 1987 to 2009.  Not all data in this compilation are mapped from photography; some are the results of field measurements. See the "Sources" section for more information. 
+
+The original source data sets were not all classified in the same manner; some used the Florida Land Use Cover and Forms Classification System (FLUCCS) codes 9113 for discontinuous seagrass and 9116 for continuous seagrass; some defined only presence and absence of seagrass, and some defined varying degrees of seagrass percent cover.  In order to merge all of these data sources into one compilation data set, FWRI reclassified the various source data attribute schemes into two categories: "Continuous Seagrass" and "Patchy (Discontinuous) Seagrass". In areas where studies overlap, the most recent study where a given area has been interpreted is represented in this data set.
+
+This data set is not comparable to previous statewide data sets for time series studies - not all areas have been updated since the previous statewide compilation and some areas previously not mapped are now included. Please contact GIS Librarian to request the source data if you need to do a time series comparison.
+
+This data set has been updated in several areas from the previous compilation, including Northern Miami-Dade (2009), Biscayne Bay (2005), Dry Tortugas (2006), and Parts of Rookery Bay NERR (2003-2006).</abstract>
+			<purpose>This GIS data set was developed to represent the most recent seagrass mapping available in Florida for current statewide display and analysis. Not all areas have been mapped. This data set includes areas that were not previously mapped in other statewide compilations. This data set is not appropriate for time series comparisons to previous statewide compilations.
+</purpose>
+			<supplinf>Prior to July 1, 2004, the Fish and Wildlife Research Institute (FWRI) was known as the Florida Marine Research Institute (FMRI). The institute name has not been changed in historical data sets or references to work completed by the Florida Marine Research Institute. The institute name has been changed in references to ongoing research, new research, and contact information. 
+
+These data are for statewide mapping and analysis only. The original regional data sets may contain more detailed seagrass attribution schemes. Contact GIS Librarian to request the source data sets.</supplinf>
+			<langdata Sync="TRUE">en</langdata></descript>
+		<timeperd>
+			<timeinfo>
+				<rngdates>
+					<begdate>1987
+</begdate>
+					<enddate>2009</enddate>
+				</rngdates>
+			</timeinfo>
+			<current>ground condition
+</current>
+		</timeperd>
+		<status>
+			<progress>Complete
+</progress>
+			<update>As needed
+</update>
+		</status>
+		<spdom>
+			<bounding>
+				<westbc>-87.527889
+</westbc>
+				<eastbc>-79.891188
+</eastbc>
+				<northbc>30.638573
+</northbc>
+				<southbc>24.402896
+</southbc>
+			</bounding>
+			<lboundng><leftbc Sync="TRUE">62016.516100</leftbc><rightbc Sync="TRUE">793678.029300</rightbc><bottombc Sync="TRUE">50834.183600</bottombc><topbc Sync="TRUE">736753.626700</topbc></lboundng></spdom>
+		<keywords>
+			<theme>
+				<themekt>FWRI Theme
+</themekt>
+				<themekey>GIS
+</themekey>
+				<themekey>benthic
+</themekey>
+				<themekey>mapping
+</themekey>
+			</theme>
+			<theme>
+				<themekt>Habitat
+</themekt>
+				<themekey>estuaries
+</themekey>
+			</theme>
+			<theme>
+				<themekt>ISO 19115 Topic Category
+</themekt>
+				<themekey>environment
+</themekey>
+			</theme>
+			<theme>
+				<themekt>Marine vegetation
+</themekt>
+				<themekey>seagrasses
+</themekey>
+			</theme>
+			<place>
+				<placekt>FWC Regions
+</placekt>
+				<placekey>North Central
+</placekey>
+				<placekey>Northeast
+</placekey>
+				<placekey>Northwest
+</placekey>
+				<placekey>South
+</placekey>
+				<placekey>Southwest
+</placekey>
+			</place>
+			<place>
+				<placekt>FWRI Place
+</placekt>
+				<placekey>Big Bend
+</placekey>
+				<placekey>Biscayne Bay
+</placekey>
+				<placekey>Biscayne National Park
+</placekey>
+				<placekey>Card Sound
+</placekey>
+				<placekey>Charlotte Harbor
+</placekey>
+				<placekey>Dry Tortugas
+</placekey>
+				<placekey>Dry Tortugas National Park
+</placekey>
+				<placekey>Estero Bay
+</placekey>
+				<placekey>Florida
+</placekey>
+				<placekey>Florida Bay
+</placekey>
+				<placekey>Florida Keys
+</placekey>
+				<placekey>Florida Keys National Marine Sanctuary
+</placekey>
+				<placekey>Florida Panhandle
+</placekey>
+				<placekey>Florida Peninsula
+</placekey>
+				<placekey>Indian River Lagoon
+</placekey>
+				<placekey>Mosquito Lagoon
+</placekey>
+				<placekey>North Central
+</placekey>
+				<placekey>Northeast
+</placekey>
+				<placekey>Northwest
+</placekey>
+				<placekey>South
+</placekey>
+				<placekey>Southwest
+</placekey>
+				<placekey>St. Andrew Bay
+</placekey>
+				<placekey>Tampa Bay
+</placekey>
+				<placekey>east coast of Florida
+</placekey>
+				<placekey>northwest Florida
+</placekey>
+				<placekey>south Florida
+</placekey>
+				<placekey>southeast Florida
+</placekey>
+				<placekey>southwest Florida
+</placekey>
+				<placekey>statewide
+</placekey>
+				<placekey>west coast of Florida
+</placekey>
+			</place>
+			<place>
+				<placekt>Florida Counties
+</placekt>
+				<placekey>Bay
+</placekey>
+				<placekey>Brevard
+</placekey>
+				<placekey>Broward
+</placekey>
+				<placekey>Charlotte
+</placekey>
+				<placekey>Citrus
+</placekey>
+				<placekey>Collier
+</placekey>
+				<placekey>Dade
+</placekey>
+				<placekey>Dixie
+</placekey>
+				<placekey>Escambia
+</placekey>
+				<placekey>Franklin
+</placekey>
+				<placekey>Gulf
+</placekey>
+				<placekey>Hernando
+</placekey>
+				<placekey>Hillsborough
+</placekey>
+				<placekey>Indian River
+</placekey>
+				<placekey>Jefferson
+</placekey>
+				<placekey>Lee
+</placekey>
+				<placekey>Levy
+</placekey>
+				<placekey>Manatee
+</placekey>
+				<placekey>Martin
+</placekey>
+				<placekey>Monroe
+</placekey>
+				<placekey>Okaloosa
+</placekey>
+				<placekey>Palm Beach
+</placekey>
+				<placekey>Pasco
+</placekey>
+				<placekey>Pinellas
+</placekey>
+				<placekey>Santa Rosa
+</placekey>
+				<placekey>Sarasota
+</placekey>
+				<placekey>St. Lucie
+</placekey>
+				<placekey>Taylor
+</placekey>
+				<placekey>Volusia
+</placekey>
+				<placekey>Wakulla
+</placekey>
+				<placekey>Walton
+</placekey>
+			</place>
+			<place>
+				<placekt>Water Management Districts
+</placekt>
+				<placekey>Northwest Florida
+</placekey>
+				<placekey>South Florida
+</placekey>
+				<placekey>Southwest Florida
+</placekey>
+				<placekey>St. Johns River
+</placekey>
+				<placekey>Suwannee River
+</placekey>
+			</place>
+		</keywords>
+		<accconst>Available without restriction. All data must be verified by Principal Investigator or Group Database Analyst prior to release.  It is strongly recommended that this data is directly acquired from FWC and not indirectly through other sources which may have changed the data in some way. FWC makes no claims as to the data's suitability for other purposes.
+</accconst>
+		<useconst>Acknowledgment of the Florida Fish and Wildlife Conservation Commission-Fish and Wildlife Research Institute as the data source would be appreciated in any products developed from these data, and such acknowledgment as is standard for citation and legal practices for data source is expected by users of this data.  Please cite the original metadata when using portions of the record to create a similar record of slightly altered data, such as reprojection. If any data are modified or adjusted, please share the edited information with FWC. Users should be aware that comparison with other data sets for the same area from other time periods may be inaccurate due to inconsistencies resulting from changes in mapping conventions, data collection, and computer processes over time. FWC shall not be liable for improper or incorrect use of this data. These data are not legal documents and are not to be used as such.  This is not a survey data set and should not be utilized as such. These data are not to be used for navigation.
+</useconst>
+		<ptcontac>
+			<cntinfo>
+				<cntorgp>
+					<cntorg>Florida Fish and Wildlife Conservation Commission-Fish and Wildlife Research Institute
+</cntorg>
+					<cntper>GISLibrarian
+</cntper>
+				</cntorgp>
+				<cntpos>GIS Data Librarian
+</cntpos>
+				<cntaddr>
+					<addrtype>mailing and physical address
+</addrtype>
+					<address>Fish and Wildlife Research Institute
+</address>
+					<address>100 Eighth Avenue Southeast
+</address>
+					<city>St. Petersburg
+</city>
+					<state>Florida
+</state>
+					<postal>33701
+</postal>
+					<country>USA
+</country>
+				</cntaddr>
+				<cntvoice>727-896-8626
+</cntvoice>
+				<cntfax>727-893-1679
+</cntfax>
+				<cntemail>GISLibrarian@MyFWC.com
+</cntemail>
+				<hours>8:00 a.m.-5:00 p.m. Eastern time
+</hours>
+			</cntinfo>
+		</ptcontac>
+		<secinfo>
+			<secsys>FWRI-DC
+</secsys>
+			<secclass>Available without restriction
+</secclass>
+			<sechandl>Available without restriction
+</sechandl>
+		</secinfo>
+		<native>Microsoft Windows XP Version 5.1 (Build 2600) Service Pack 2; ESRI ArcCatalog 9.1.0.780
+</native>
+		<natvform Sync="TRUE">Shapefile</natvform></idinfo>
+	<dataqual>
+		<attracc>
+			<attraccr>Attributes are accurate as reclassification of source data. See "Source Information" and "Process Step" sections for methods of reclassification.
+</attraccr>
+		</attracc>
+		<logic>These data appear logically consistent. Geodatabase topology was run to detect overlapping polygons - none are present. Some slivers may be present.
+</logic>
+		<complete>These data are complete as of data available to FWRI in May, 2010. The study areas for the source data varied. Offshore data have not been mapped to any consistent distance or depth statewide. 
+
+Broward and Collier counties are included; however, these counties were mapped using field measurements, rather than complete aerial photography, so additional unmapped seagrass may still be present within these counties. Additional data gaps may be present. Contact GIS Librarian to request extent of mapping.</complete>
+		<posacc>
+			<horizpa>
+				<horizpar>Positional accuracy varies according to source data. No positional alterations have been performed for this compilation.
+</horizpar>
+			</horizpa>
+		</posacc>
+		<lineage>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>FWC-FWRI (Florida Fish and Wildlife Conservation Commission-Fish and Wildlife Research Institute)
+</origin>
+						<pubdate>Unpublished material
+</pubdate>
+						<title>benthic_FKTR_2004
+</title>
+						<geoform>vector digital data
+</geoform>
+						<onlink>http://research.myfwc.com/
+</onlink>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<sngdate>
+							<caldate>20041205
+</caldate>
+						</sngdate>
+					</timeinfo>
+					<srccurr>ground condition
+</srccurr>
+				</srctime>
+				<srccitea>benthic_FKTR_2004
+</srccitea>
+				<srccontr>This small study area around Fat Deer Key is the most recent data for this area. All of the relevant polygons in this study were used. This data set was originally classified using the Florida System for Classification of Habitats and Marine Environments (SCHEME). 
+
+Codes, Modifiers were reclassified as follows:
+
+211 (Continuous SRV) and 211, dd (Continuous SRV, mangrove) were reclassified as "Continuous Seagrass"; 
+212 (Discontinuous SRV) and 34, I (Hardbottom, Seagrass) were reclassified as "Patchy (Discontinuous) Seagrass".</srccontr>
+			</srcinfo>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>Avineon, Inc.
+</origin>
+						<pubdate>20050914
+</pubdate>
+						<title>benthic_flbay_2004
+</title>
+						<geoform>vector digital data
+</geoform>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<mdattim>
+							<sngdate>
+								<caldate>20040331
+</caldate>
+							</sngdate>
+							<sngdate>
+								<caldate>20040421
+</caldate>
+							</sngdate>
+						</mdattim>
+					</timeinfo>
+					<srccurr>ground condition
+</srccurr>
+				</srctime>
+				<srccitea>benthic_flbay_2004
+</srccitea>
+				<srccontr>This GIS data set is the most recent data available for the Florida Bay area, with the exception of some areas that were not interpreted due to turbidity. Those areas are represented in the final compilation data set using data that was interpreted in previous studies (benthic_south_fl and seagrass_swcoast_fl_1987). All relevant polygons from this data set were used.
+
+This data set was originally classified using the Florida System for Classification of Habitats and Marine Environments (SCHEME). Codes were reclassified as follows:
+
+211 (Continuous SRV) and 211cc (Continuous SRV, bank) were classified as "Continuous Seagrass"; 
+212 (Discontinuous SRV) and 212cc (Discontinuous SRV, bank) were classified as "Patchy (Discontinuous) Seagrass".</srccontr>
+			</srcinfo>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>Florida Fish and Wildlife Conservation Commission (FWC), Fish and Wildlife Research Institute (FWRI), National Oceanic and Atmospheric Administration (NOAA) Coastal Services Center (CSC), Dade County
+</origin>
+						<pubdate>2001
+</pubdate>
+						<title>benthic_south_fl
+</title>
+						<geoform>vector digital data
+</geoform>
+						<pubinfo>
+							<pubplace>St. Petersburg, FL
+</pubplace>
+							<publish>FWRI
+</publish>
+						</pubinfo>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<mdattim>
+							<sngdate>
+								<caldate>1991
+</caldate>
+							</sngdate>
+							<sngdate>
+								<caldate>1992
+</caldate>
+							</sngdate>
+							<sngdate>
+								<caldate>1995
+</caldate>
+							</sngdate>
+						</mdattim>
+					</timeinfo>
+					<srccurr>ground condition
+</srccurr>
+				</srctime>
+				<srccitea>benthic_south_fl
+</srccitea>
+				<srccontr>In areas where this data set overlaps with benthic_fktr_2004, benthic_flbay_2004, benthic_n_miamidade_2009, and benthic_ibscayne_2005 those data sets were used, with the exception of areas within Florida Bay that were uninterpretable in 2004 due to turbidity.
+
+This data set originally used the FKNMS Benthic Classification System. The simplified "Super" classes were reclassified as follows:
+
+SGC (Continuous Seagrass) was reclassified to "Continuous Seagrass"; 
+HB_SG (Hardbottom with seagrass) and SGP (Patchy (Discontinuous) Seagrass) were reclassified as "Patchy (Discontinuous) Seagrass".</srccontr>
+			</srcinfo>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>Avineon, Inc.
+</origin>
+						<pubdate>20051202
+</pubdate>
+						<title>benthic_SRWMD_2001
+</title>
+						<geoform>vector digital data
+</geoform>
+						<pubinfo>
+							<pubplace>Live Oak, Florida
+</pubplace>
+							<publish>Suwannee River Water Management District
+</publish>
+						</pubinfo>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<mdattim>
+							<sngdate>
+								<caldate>20011119
+</caldate>
+							</sngdate>
+							<sngdate>
+								<caldate>20011121
+</caldate>
+							</sngdate>
+						</mdattim>
+					</timeinfo>
+					<srccurr>ground condition
+</srccurr>
+				</srctime>
+				<srccitea>benthic_SRWMD_2001
+</srccitea>
+				<srccontr>This GIS data set is used only where more recent data are not available. In areas where it overlaps "seagrass_bigbend_2006", the 2006 data are used.
+
+The data were originally classified using the Florida Land Use, Cover and Forms Classification System (FLUCCS). Codes were reclassified as follows:
+
+9113 (Discontinuous Seagrass) was reclassified to "Patchy (Discontinuous) Seagrass";
+9116 (Continuous Seagrass) was reclassified to "Continuous Seagrass".</srccontr>
+			</srcinfo>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>Broward County
+</origin>
+						<pubdate>Unpublished Material
+</pubdate>
+						<title>seagrass_broward
+</title>
+						<geoform>vector digital data
+</geoform>
+						<onlink>http://ocean.floridamarine.org/mrgis
+</onlink>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<rngdates>
+							<begdate>2006
+</begdate>
+							<enddate>2007
+</enddate>
+						</rngdates>
+					</timeinfo>
+					<srccurr>ground condition
+</srccurr>
+				</srctime>
+				<srccitea>seagrass_broward
+</srccitea>
+				<srccontr>This GIS data set is the only data available for the most of area. In the small area of overlap with benthic_palmbeach_2007, the Palm Beach County data were used. 
+
+No seagrass density attributes were recorded, so all polygons were classified as "Patchy (Discontinuous) Seagrass" by default. This information is not intended to provide an exhaustive coverage of seagrass in Broward County.  Additional areas of seagrass are believed to exist, but have not yet been verified by staff.</srccontr>
+			</srcinfo>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>Collier County Environmental Services
+</origin>
+						<pubdate>2002
+</pubdate>
+						<title>seagrass_collier
+</title>
+						<geoform>vector digital data
+</geoform>
+						<onlink>http://www.colliergov.net
+</onlink>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<sngdate>
+							<caldate>Unknown
+</caldate>
+						</sngdate>
+					</timeinfo>
+					<srccurr>unknown, FWRI received the data in 2002
+</srccurr>
+				</srctime>
+				<srccitea>seagrass_collier
+</srccitea>
+				<srccontr>This GIS data set is the only data available for some areas of Collier County, but in areas where it overlaps with seagrass_esterobay_2006, the 2006 data was used instead. This data set did not originally have seagrass density attributes, so by default the polygons have been reclassified as "Patchy (Discontinuous) Seagrass".</srccontr>
+			</srcinfo>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>Avineon, Inc.
+</origin>
+						<pubdate>Unknown</pubdate>
+						<title>seagrass_esterobay_2006</title>
+						<geoform>vector digital data
+</geoform>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<mdattim><sngdate><caldate>200602</caldate></sngdate><sngdate><caldate>200604</caldate></sngdate><sngdate><caldate>200605</caldate></sngdate></mdattim></timeinfo>
+					<srccurr>ground condition
+</srccurr>
+				</srctime>
+				<srccitea>seagrass_esterobay_2006</srccitea>
+				<srccontr>This data set is overlapped by seagrass_swfwmd_2008. In the area of overlap, the 2008 data were used.
+
+The source data were originally classified using the Florida Land Use, Cover and Forms Classification System (FLUCCS). Data were reclassified as follows: 
+
+9113 (Discontinuous Seagrass) was reclassified to "Patchy (Discontinuous) Seagrass"; 
+9116 (Continuous Seagrass) was reclassified to "Continuous Seagrass".</srccontr>
+			</srcinfo>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>United States Geological Survey (USGS), Biological Resources Division (BRD), at the National Wetlands Research Center (NWRC).
+</origin>
+						<pubdate>1992
+</pubdate>
+						<title>seagrass_nw_fl_1992
+</title>
+						<geoform>vector digital data
+</geoform>
+						<pubinfo>
+							<pubplace>Lafayette, LA
+</pubplace>
+							<publish>USGS, BRD
+</publish>
+						</pubinfo>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<sngdate>
+							<caldate>1992
+</caldate>
+						</sngdate>
+					</timeinfo>
+					<srccurr>ground condition
+</srccurr>
+				</srctime>
+				<srccitea>seagrass_nw_fl_1992
+</srccitea>
+				<srccontr>This data set is overlapped by more recent data: seagrass_springscoast_07, seagrass_swfwmd_2008, benthic_srwmd_2001, seagrass_bigbend_2006, seagrass_standrew_2003, seagrass_santarosa_2001, seagrass_santarosa_2003, seagrass_choctawhatchee03, and seagrass_perdidobay_2002. In areas of overlap, the most recent of those data sets was used, with the exception of areas where the seagrass_nw_fl_1992 extended farther up river than the more recent data sets, those extended areas were preserved.
+
+The source data were originally classified using the USGS derived C-CAP Coastal Land Cover Classification System. Data were reclassified as follows:
+
+CSG was reclassified as "Continuous Seagrass"; 
+PSG1, PSG2, PSG3, and PSG4 were reclassified as "Patchy (Discontinuous) Seagrass".</srccontr>
+			</srcinfo>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>Mobile Bay National Estuary Program
+</origin>
+						<pubdate>Unknown
+</pubdate>
+						<title>seagrass_perdidobay_2002
+</title>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<sngdate>
+							<caldate>2002
+</caldate>
+						</sngdate>
+					</timeinfo>
+					<srccurr>ground condition
+</srccurr>
+				</srctime>
+				<srccitea>seagrass_perdidobay_2002
+</srccitea>
+				<srccontr>This is the most recent data for the area represented. All polygons from this data set were used. Polygons indicate where seagrass is present, so all polygons were reclassified as "Patchy (Discontinuous) Seagrass" by default.</srccontr>
+			</srcinfo>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>US Geological Survey
+</origin>
+						<pubdate>Unknown
+</pubdate>
+						<title>seagrass_santarosa_2001_H
+</title>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<sngdate>
+							<caldate>2001
+</caldate>
+						</sngdate>
+					</timeinfo>
+					<srccurr>ground condition
+</srccurr>
+				</srctime>
+				<srccitea>seagrass_santarosa_2001_H
+</srccitea>
+				<srccontr>This data set is overlapped by more recent data seagrass_santarosa_2003. This data was used only in areas where there was no more recent data.
+
+The source data were originally classified using the USGS derived C-CAP Coastal Land Cover Classification System. Data were reclassified as follows:
+
+CSG was reclassified as "Continuous Seagrass"; 
+PSG1, PSG2, PSG3, and PSG4 were reclassified as "Patchy (Discontinuous) Seagrass".</srccontr>
+			</srcinfo>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>U.S. Geological Survey, National Wetlands Research Center
+</origin>
+						<pubdate>2005
+</pubdate>
+						<title>seagrass_santarosa_2003
+</title>
+						<geoform>vector digital data
+</geoform>
+						<pubinfo>
+							<pubplace>Lafayette, LA
+</pubplace>
+							<publish>U.S. Geological Survey, National Wetlands Research Center
+</publish>
+						</pubinfo>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<sngdate>
+							<caldate>2003
+</caldate>
+						</sngdate>
+					</timeinfo>
+					<srccurr>ground condition
+</srccurr>
+				</srctime>
+				<srccitea>seagrass_santarosa_2003
+</srccitea>
+				<srccontr>This data set is the most recent data for the area represented. All relevant polygons from this data set have been included. 
+
+The source data were originally classified using the USGS derived C-CAP Coastal Land Cover Classification System. Data were reclassified as follows:
+
+CSG was reclassified as "Continuous Seagrass"; 
+PSG1, PSG2, PSG3, and PSG4 were reclassified as "Patchy (Discontinuous) Seagrass".</srccontr>
+			</srcinfo>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>Avineon, Inc.
+</origin>
+						<pubdate>20080714</pubdate>
+						<title>seagrass_sjrwmd_2007</title>
+						<edition>(Version 8.3, September 29, 2005)
+</edition>
+						<geoform>vector digital data
+</geoform>
+						<pubinfo>
+							<pubplace>Clearwater, FL
+</pubplace>
+							<publish>Avineon, Inc.
+</publish>
+						</pubinfo>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<mdattim>
+							<sngdate>
+								<caldate>20070713</caldate>
+							</sngdate>
+							<sngdate>
+								<caldate>20070804</caldate>
+							</sngdate>
+							<sngdate><caldate>20070808</caldate></sngdate><sngdate><caldate>20080101</caldate></sngdate></mdattim>
+					</timeinfo>
+					<srccurr>ground condition
+</srccurr>
+				</srctime>
+				<srccitea>seagrass_sjrwmd_2007</srccitea>
+				<srccontr>This data set is partially overlapped by benthic_palmbeach_2007, and the Palm Beach County data set was used in the area of overlap. 
+
+The source data were originally classified using the Florida Land Use, Cover and Forms Classification System (FLUCCS). Data were reclassified as follows:
+
+9113 (Discontinuous Seagrass) was reclassified to "Patchy (Discontinuous) Seagrass"; 
+9116 (Continuous Seagrass) was reclassified to "Continuous Seagrass".</srccontr>
+			</srcinfo>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>United States Department of the Interior, Minerals Management Service (MMS)
+</origin>
+						<pubdate>1987
+</pubdate>
+						<title>seagrass_swcoast_fl_1987
+</title>
+						<geoform>vector digital data
+</geoform>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<sngdate>
+							<caldate>1987
+</caldate>
+						</sngdate>
+					</timeinfo>
+					<srccurr>ground condition
+</srccurr>
+				</srctime>
+				<srccitea>seagrass_swcoast_fl_1987
+</srccitea>
+				<srccontr>This data set is overlapped by more recent data benthic_rookerybay_nerr_part, benthic_south_fl and benthic_flbay_2004. It is only used where no more recent data exists, or to fill in gaps where the more recent data were uninterpreted. 
+
+The source data recorded presence/absence of seagrass without indication of density. In areas where seagrass is present (SCLASS = 4) the data were reclassified "Patchy (Discontinuous) Seagrass" by default.</srccontr>
+			</srcinfo>
+			<srcinfo>
+				<srccite>
+					<citeinfo>
+						<origin>U.S. Geological Survey, National Wetlands Research Center
+</origin>
+						<pubdate>2005
+</pubdate>
+						<title>seagrass_standrew_2003
+</title>
+						<geoform>vector digital data
+</geoform>
+						<pubinfo>
+							<pubplace>Lafayette, LA
+</pubplace>
+							<publish>U.S. Geological Survey, National Wetlands Research Center
+</publish>
+						</pubinfo>
+					</citeinfo>
+				</srccite>
+				<typesrc>vector digital data
+</typesrc>
+				<srctime>
+					<timeinfo>
+						<sngdate>
+							<caldate>2003
+</caldate>
+						</sngdate>
+					</timeinfo>
+					<srccurr>ground condition
+</srccurr>
+				</srctime>
+				<srccitea>seagrass_standrew_2003
+</srccitea>
+				<srccontr>This is the most recent data for the area represented. All relevant polygons from this data set have been included. 
+
+The source data were originally classified using the USGS derived C-CAP Coastal Land Cover Classification System. Data were reclassified as follows:
+
+CSG was reclassified as "Continuous Seagrass"; 
+PSG1, PSG2, PSG3, and PSG4 were reclassified as "Patchy (Discontinuous) Seagrass".</srccontr>
+			</srcinfo>
+			<procstep>
+				<procdesc>FWRI staff added four attributes to each data set:
+
+SEAGRASS - indicates "continuous" or "discontinuous". If a seagrass data set only indicated presence/absence this attribute defaulted to discontinuous.
+SOURCEDATE - year(s) of photography. Also indicates if date is unknown or if the polygon was not interpreted from photography.
+METADATA - the information in this field will be populated with a link to the metadata for the source data set that the polygon came from once the source metadata is online. Currently it is the source data set name used as a placeholder.
+DESCRIPT - standardized name field for labeling maps. Values include "Continuous Seagrass", or "Discontinuous Seagrass".
+
+Staff used the most recent information for an area. Staff determined the most recent information by creating footprints of all source polygons, minus any large land polygons and uninterpreted areas. Staff used these footprints with the ArcGIS Toolbox command "erase" to eliminate areas of overlap from older source data sets. In some areas the exclusion of shoreline resulted in sliver polygons due to different studies using different shorelines. Staff manually deleted these slivers after the "erase", defaulting to the more recent shoreline coverage.
+
+Once all the data were properly "erased", staff loaded all of the data into a single geodatabase feature class. Running a topology resulted in no overlaps. If an area was uninterpreted within a more recent study, but interpreted in an older study, then the older study was used. 
+
+Sliver polygons less than one square meter were deleted. Any additional slivers are either due to preserving the "Source" attribute or they were present in the original source data sets.</procdesc>
+				<procdate>2010</procdate>
+				<proccont>
+					<cntinfo>
+						<cntperp>
+							<cntper>GISLibrarian
+</cntper>
+							<cntorg>Florida Fish and Wildlife Conservation Commission-Fish and Wildlife Research Institute
+</cntorg>
+						</cntperp>
+						<cntpos>GIS Data Librarian
+</cntpos>
+						<cntaddr>
+							<addrtype>mailing and physical address
+</addrtype>
+							<address>Fish and Wildlife Research Institute
+</address>
+							<address>100 Eighth Avenue Southeast
+</address>
+							<city>St. Petersburg
+</city>
+							<state>Florida
+</state>
+							<postal>33701
+</postal>
+							<country>USA
+</country>
+						</cntaddr>
+						<cntvoice>727-896-8626
+</cntvoice>
+						<cntfax>727-893-1679
+</cntfax>
+						<cntemail>GISLibrarian@MyFWC.com
+</cntemail>
+						<hours>8:00 a.m.-5:00 p.m. Eastern time
+</hours>
+					</cntinfo>
+				</proccont>
+			</procstep>
+			<srcinfo><typesrc>vector digital data</typesrc><srccitea>seagrass_choctawhatchee03</srccitea><srccite><citeinfo><title>seagrass_choctawhatchee03</title><origin>U.S. Geological Survey, National Wetlands Research Center</origin><pubdate>2005</pubdate><geoform>vector digital data</geoform><pubinfo><pubplace>Lafayette, LA</pubplace><publish>U.S. Geological Survey, National Wetlands Research Center</publish></pubinfo></citeinfo></srccite><srcscale>12000</srcscale><srctime><timeinfo><sngdate><caldate>2003</caldate></sngdate></timeinfo><srccurr>ground condition</srccurr></srctime><srccontr>This is the most recent data for the area represented. All relevant polygons from this data set have been included. 
+
+The source data were originally classified using the USGS derived C-CAP Coastal Land Cover Classification System. Data were reclassified as follows:
+
+CSG was reclassified as "Continuous Seagrass"; 
+PSG1, PSG2, PSG3, and PSG4 were reclassified as "Patchy (Discontinuous) Seagrass".</srccontr></srcinfo><srcinfo><srccite><citeinfo><title>seagrass_bigbend_2006_poly</title><origin>Photo Science, Inc.</origin><pubdate>Unpublished Material</pubdate><geoform>vector digital data</geoform></citeinfo></srccite><typesrc>vector digital data</typesrc><srccitea>seagrass_bigbend_2006_poly</srccitea><srcscale>24000</srcscale><srctime><timeinfo><sngdate><caldate>2006</caldate></sngdate></timeinfo><srccurr>ground condition</srccurr></srctime><srccontr>This data set is the most recent for the area. All relevant polygons from this data set were used. 
+
+The source data were originally classified using the Florida Land Use, Cover and Forms Classification System (FLUCCS). Data were reclassified as follows: 
+
+9113 (Discontinuous Seagrass) was reclassified to "Patchy (Discontinuous) Seagrass";
+9116 (Continuous Seagrass) was reclassified to "Continuous Seagrass".</srccontr></srcinfo><srcinfo><typesrc>vector digital data</typesrc><srccitea>seagrass_springscoast_07</srccitea><srccite><citeinfo><title>seagrass_springscoast_07</title><origin>Avineon, Inc.</origin><pubdate>20081217</pubdate><edition>Final</edition><geoform>vector digital data</geoform></citeinfo></srccite><srcscale>12000</srcscale><srctime><timeinfo><sngdate><caldate>200704</caldate></sngdate></timeinfo><srccurr>ground condition</srccurr></srctime><srccontr>This data set is overlapped by seagrass_swfwmd_2008 and in that overlap, the 2008 data were used.
+
+The source data were originally classified using the Florida Land Use, Cover and Forms Classification System (FLUCCS). Data were reclassified as follows: 
+
+9113 (Seagrass, Patchy) was reclassified to "Patchy (Discontinuous) Seagrass";
+9111 (Seagrass, Sparse- Medium: 10%-75% continuous cover) and 9112 (Seagrass, Dense: 75%-100% continuous cover) were reclassified to "Continuous Seagrass".</srccontr></srcinfo><srcinfo><srccitea>benthic_palmbeach_2007</srccitea><typesrc>vector digital data</typesrc><srccite><citeinfo><origin>Avineon, Inc.</origin><pubdate>20080429</pubdate><title>benthic_palmbeach_2007</title><edition>(Version 8.3, September 29, 2005)</edition><geoform>vector digital data</geoform><pubinfo><pubplace>Clearwater, FL</pubplace><publish>Avineon, Inc.</publish></pubinfo></citeinfo></srccite><srcscale>24000</srcscale><srctime><timeinfo><sngdate><caldate>2007</caldate></sngdate></timeinfo><srccurr>ground condition</srccurr></srctime><srccontr>This data set is the most recent for the area. All relevant polygons from this data set were used. 
+
+The source data were originally classified using the Florida Land Use, Cover and Forms Classification System (FLUCCS). Data were reclassified as follows: 
+
+9113 (Seagrass, patchy) was reclassified to "Patchy (Discontinuous) Seagrass"; 
+9116 (Seagrass, continuous) was reclassified to "Continuous Seagrass".</srccontr></srcinfo><srcinfo><srccitea>seagrass_swfwmd_2008</srccitea><srccontr>This data set is the most recent for the area. All relevant polygons from this data set were used. 
+
+The source data were originally classified using the Florida Land Use, Cover and Forms Classification System (FLUCCS). Data were reclassified as follows: 
+
+9113 (Discontinuous Seagrass) was reclassified to "Patchy (Discontinuous) Seagrass"; 
+9116 (Continuous Seagrass) was reclassified to "Continuous Seagrass".</srccontr><typesrc>vector digital data</typesrc><srccite><citeinfo><origin>Photo Science, Inc.</origin><pubdate>Unknown</pubdate><title>seagrass_swfwmd_2008</title><geoform>vector digital data</geoform></citeinfo></srccite><srcscale>24000</srcscale><srctime><timeinfo><sngdate><caldate>2008</caldate></sngdate></timeinfo><srccurr>ground condition</srccurr></srctime></srcinfo><srcinfo><srccitea>benthic_biscayne_2005</srccitea><srccontr>In areas of overlap with "benthic_biscayne_2009", the more recent data was used.
+
+Polygons with a BIO_COVER of "Predominantly Seagrass (Patchy)" were reclassified as "Patchy (Discontinuous) Seagrass" and polygons with a BIO_COVER of "Predominantly Seagrass (Continuous)" were reclassified as "Continuous Seagrass".</srccontr><typesrc>vector digital data</typesrc><srccite><citeinfo><origin>vector digital data</origin><pubdate>20080903</pubdate><title>vector digital data</title><geoform>vector digital data</geoform><pubinfo><pubplace>Clearwater. FL</pubplace><publish>vector digital data</publish></pubinfo><onlink>none</onlink></citeinfo></srccite><srctime><timeinfo><sngdate><caldate>2005</caldate></sngdate></timeinfo><srccurr>ground condition</srccurr></srctime></srcinfo><srcinfo><srccitea>benthic_tortugas_2006</srccitea><srccontr>This data set is the most recent for the area. All relevant polygons from this data set were used.
+
+Polygons with a BIO_COVER of "Predominantly Seagrass (Patchy)" were reclassified as "Patchy (Discontinuous) Seagrass" and polygons with a BIO_COVER of "Predominantly Seagrass (Continuous)" were reclassified as "Continuous Seagrass".</srccontr><typesrc>vector digital data</typesrc><srccite><citeinfo><origin>vector digital data</origin><pubdate>20080528</pubdate><title>vector digital data</title><geoform>vector digital data</geoform><pubinfo><pubplace>Clearwater, FL</pubplace><publish>vector digital data</publish></pubinfo><onlink>none</onlink></citeinfo></srccite><srctime><timeinfo><sngdate><caldate>2006</caldate></sngdate></timeinfo><srccurr>ground condition</srccurr></srctime></srcinfo><srcinfo><srccitea>benthic_rookerybay_nerr_part</srccitea><srccite><citeinfo><title>Benthic Habitats Parts of Rookery Bay Florida National Estuarine Research Reserve 2003 to 2006 </title><origin>Stan Locker, Rookery Bay NERR </origin><pubdate>2006</pubdate><geoform>vector digital data</geoform><pubinfo><pubplace>St. Petersburg, FL</pubplace><publish>College of Marine Science, University of South Florida </publish></pubinfo><othercit>The habitats in the shapefile were mapped during the following studies: Locker, S.D and Wright, A.K. 2003. Benthic Habitat Mapping for Habitat Suitability Modeling in Rookery Bay National Estuarine Research Reserve. Final Report. 84pp. Locker, S.D. 2005. Establishing Baseline Benthic Habitat Coverages in Faka Union and Fakahatchee Bays for Present and Future Environmental Studies. Final Report. 60pp. Locker, S.D. 2006. Mapping Submerged Aquatic Vegetation Using Sidescan Sonar, Cape Romano Shoals, Florida. Final Report. 18pp. Locker, S.D. and Jarrett, B.D. 2006. Benthic Habitat Mapping in Pumpkin Bay, Florida: Establishing Baseline Conditions Prior to Picayune Strand Restoration. Final Report. 57pp. 
+</othercit><onlink>http://research.myfwc.com</onlink></citeinfo></srccite><typesrc>vector digital data</typesrc><srccontr>This data set is the most recent for the area. All relevant polygons from this data set were used.
+
+The data were originally classified using multiple classifications. Areas coded as "Rooted Vascular" were classified as Patchy (Discontinuous) Seagrass unless the "STAN_HABIT" attribute indicated it was Continuous.</srccontr><srctime><timeinfo><rngdates><begdate>2003</begdate><enddate>2006</enddate></rngdates></timeinfo><srccurr>ground condition</srccurr></srctime></srcinfo><srcinfo><srccitea>benthic_n_miamidade_2009</srccitea><srccontr>This data set is the most recent for the area. All relevant polygons from this data set were used.
+
+"Modifier1" indicated whether Continuous Seagrass or Discontinuous Seagrass was present and this coding was retained.</srccontr><typesrc>vector digital data</typesrc><srccite><citeinfo><title>Benthic Habitats North Miami-Dade Florida 2009 </title><origin>Brian Walker</origin><pubdate>20090630</pubdate><edition>1</edition><geoform>vector digital data</geoform></citeinfo></srccite><srctime><timeinfo><sngdate><caldate>2009</caldate></sngdate></timeinfo><srccurr>ground condition</srccurr></srctime></srcinfo><procstep><procdesc Sync="TRUE">Metadata imported.</procdesc><srcused Sync="TRUE">G:\Groups\GIS\gis_data_mgt_team\forSDE\seagrass_fl_poly_new.shp.xml</srcused><date Sync="TRUE">20100518</date><time Sync="TRUE">12251900</time></procstep></lineage>
+	</dataqual>
+	<spdoinfo>
+		<direct>Vector
+</direct>
+		<ptvctinf><esriterm Name="bbend_sg_diss"><efeatyp Sync="TRUE">Simple</efeatyp><efeageom code="4" Sync="TRUE"></efeageom><esritopo Sync="TRUE">FALSE</esritopo><efeacnt Sync="TRUE">0</efeacnt><spindex Sync="TRUE">FALSE</spindex><linrefer Sync="TRUE">FALSE</linrefer></esriterm></ptvctinf></spdoinfo>
+	<spref>
+		<horizsys>
+			<geodetic>
+				<horizdn>North American Datum of 1983
+</horizdn>
+				<ellips>Geodetic Reference System 80
+</ellips>
+				<semiaxis>6378137.000000
+</semiaxis>
+				<denflat>298.257222
+</denflat>
+			</geodetic>
+			<cordsysn><geogcsn Sync="TRUE">GCS_North_American_1983</geogcsn><projcsn Sync="TRUE">NAD_1983_Albers</projcsn></cordsysn></horizsys>
+		<vertdef><altsys><altenc Sync="TRUE">Explicit elevation coordinate included with horizontal coordinates</altenc><altres Sync="TRUE">0.000100</altres></altsys></vertdef></spref>
+	<eainfo>
+		<detailed Name="bbend_sg_diss">
+			<enttyp>
+				<enttypl>FMRI.submerged_aquatic_vegetation</enttypl>
+				<enttypd>Statewide submerged aquatic vegetation compilation ranging in year from 1987 to 2009.</enttypd>
+				<enttypds>Producer defined.
+</enttypds>
+				<enttypt Sync="TRUE">Feature Class</enttypt><enttypc Sync="TRUE">0</enttypc></enttyp>
+			<attr>
+				<attrlabl>SEAGRASS
+</attrlabl>
+				<attrdef>Description of seagrass density
+</attrdef>
+				<attrdefs>Producer defined
+</attrdefs>
+				<attrdomv>
+					<edom>
+						<edomv>Discontinuous
+</edomv>
+						<edomvd>Discontinuous seagrass may range from 0 to 90% ground cover. The user should be aware that different sources and scales of seagrass information and classification systems were used to create this dataset 
+</edomvd>
+						<edomvds>Producer defined
+</edomvds>
+					</edom>
+					<edom>
+						<edomv>Continuous
+</edomv>
+						<edomvd>Continuous seagrass may range from 85% ground cover to 100%. The user should be aware that different sources and scales of seagrass information and classification systems were used to create this dataset
+</edomvd>
+						<edomvds>Producer defined
+</edomvds>
+					</edom>
+					<udom Sync="TRUE">Coordinates defining the features.</udom></attrdomv>
+				<attrtype Sync="TRUE">OID</attrtype><attwidth Sync="TRUE">4</attwidth><attalias Sync="TRUE">FID</attalias><atprecis Sync="TRUE">0</atprecis><attscale Sync="TRUE">0</attscale></attr>
+			<attr><attrlabl Sync="TRUE">SHAPE</attrlabl><attalias Sync="TRUE">Shape</attalias><attrtype Sync="TRUE">Geometry</attrtype><attwidth Sync="TRUE">0</attwidth><attrdef Sync="TRUE">Feature geometry.</attrdef><attrdefs Sync="TRUE">ESRI</attrdefs><attrdomv><udom Sync="TRUE">Coordinates defining the features.</udom></attrdomv><atprecis Sync="TRUE">0</atprecis><attscale Sync="TRUE">0</attscale></attr><attr>
+				<attrlabl>Shape
+</attrlabl>
+				<attrdef>Feature geometry.
+</attrdef>
+				<attrdefs>ESRI
+</attrdefs>
+				<attrdomv>
+					<udom>Coordinates defining the features.
+</udom>
+				</attrdomv>
+				<attalias Sync="TRUE">SEAGRASS</attalias><attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">20</attwidth><atprecis Sync="TRUE">0</atprecis><attscale Sync="TRUE">0</attscale></attr>
+		</detailed>
+	</eainfo>
+	<distinfo>
+		<distrib>
+			<cntinfo>
+				<cntorgp>
+					<cntorg>Florida Fish and Wildlife Conservation Commission-Fish and Wildlife Research Institute
+</cntorg>
+					<cntper>GISLibrarian
+</cntper>
+				</cntorgp>
+				<cntpos>GIS Data Librarian
+</cntpos>
+				<cntaddr>
+					<addrtype>mailing and physical address
+</addrtype>
+					<address>Fish and Wildlife Research Institute
+</address>
+					<address>100 Eighth Avenue Southeast
+</address>
+					<city>St. Petersburg
+</city>
+					<state>Florida
+</state>
+					<postal>33701
+</postal>
+					<country>USA
+</country>
+				</cntaddr>
+				<cntvoice>727-896-8626
+</cntvoice>
+				<cntfax>727-893-1679
+</cntfax>
+				<cntemail>GISLibrarian@MyFWC.com
+</cntemail>
+				<hours>8:00 a.m.-5:00 p.m. Eastern time
+</hours>
+			</cntinfo>
+		</distrib>
+		<distliab>This data set is in the public domain, and the recipient may not assert any proprietary rights thereto nor represent it to anyone as other than a FWC-FWRI produced data set; it is provided "as-is" without warranty of any kind, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose. The user assumes all responsibility for the accuracy and suitability of this data set for a specific application. In no event will the staff of the Fish and Wildlife Research Institute be liable for any damages, including lost profits, lost savings, or other incidental or consequential damages arising from the use of or the inability to use this data set.
+</distliab>
+		<stdorder>
+			<digform>
+				<digtinfo>
+					<formname>SHP
+</formname>
+					<transize>78.573
+</transize>
+					<dssize Sync="TRUE">0.000</dssize></digtinfo>
+				<digtopt>
+					<onlinopt>
+						<computer>
+							<networka>
+								<networkr>http://research.myfwc.com/
+</networkr>
+							</networka>
+						</computer>
+					</onlinopt>
+				</digtopt>
+			</digform>
+			<fees>None. However, persons or organizations requesting information must provide transfer media if FTP is not available and must pay express shipping costs if express shipping is required.
+</fees>
+			<ordering>Contact GIS Librarian by e-mail, telephone, or letter explaining which products are needed and providing a brief description of how the products will be used. Also, provide name and address of the person or organization requesting the products.
+</ordering>
+			<turnarnd>Usually within 10 business days, although, complex requests may take longer
+</turnarnd>
+		</stdorder>
+		<custom>Contact GIS Librarian
+</custom>
+		<resdesc Sync="TRUE">Downloadable Data</resdesc></distinfo>
+	<metainfo>
+		<metd>20100507</metd>
+		<metc>
+			<cntinfo>
+				<cntperp>
+					<cntper>GISLibrarian
+</cntper>
+					<cntorg>Florida Fish and Wildlife Conservation Commission-Fish and Wildlife Research Institute
+</cntorg>
+				</cntperp>
+				<cntpos>GIS Data Librarian
+</cntpos>
+				<cntaddr>
+					<addrtype>mailing and physical address
+</addrtype>
+					<address>Fish and Wildlife Research Institute
+</address>
+					<address>100 Eighth Avenue Southeast
+</address>
+					<city>St. Petersburg
+</city>
+					<state>Florida
+</state>
+					<postal>33701
+</postal>
+					<country>USA
+</country>
+				</cntaddr>
+				<cntvoice>727-896-8626
+</cntvoice>
+				<cntfax>727-893-1679
+</cntfax>
+				<cntemail>GISLibrarian@MyFWC.com
+</cntemail>
+				<hours>8:00 a.m.-5:00 p.m. Eastern time
+</hours>
+			</cntinfo>
+		</metc>
+		<metstdn>FGDC Content Standards for Digital Geospatial Metadata
+</metstdn>
+		<metstdv>FGDC-STD-001-1998
+</metstdv>
+		<mettc>local time
+</mettc>
+		<metac>No restrictions on metadata
+</metac>
+		<metuc>Metadata must be distributed with the data set.
+</metuc>
+		<metsi>
+			<metscs>FWRI-MC
+</metscs>
+			<metsc>Available
+</metsc>
+			<metshd>Metadata must be distributed with the data set.
+</metshd>
+		</metsi>
+		<langmeta Sync="TRUE">en</langmeta></metainfo>
+	<Esri><CreaDate>20141019</CreaDate><CreaTime>10455400</CreaTime><SyncOnce>FALSE</SyncOnce><ModDate>20141019</ModDate><ModTime>10492900</ModTime><SyncDate>20141019</SyncDate><SyncTime>10492900</SyncTime><DataProperties><lineage><Process ToolSource="C:\Program Files\ArcGIS\ArcToolbox\Toolboxes\Data Management Tools.tbx\CopyFeatures" Date="20100804" Time="211720">CopyFeatures "Database Connections\CurrentMRGIS.ISM_Mapper.sde\FMRI.benthic\FMRI.seagrass_fl_poly" \\Bishop\nas1\MRGIS_shapefiles\2010_08_04current\benthic\seagrass_fl_poly\seagrass_fl_poly.shp # 0 0 0</Process><Process ToolSource="c:\program files (x86)\arcgis\desktop10.1\ArcToolbox\Toolboxes\Data Management Tools.tbx\Project" Date="20141019" Time="104554">Project Big_Bend_2006 M:\presentations\wqtrends_pres\data\bbend_sg.shp GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433],METADATA['World',-180.0,-90.0,180.0,90.0,0.0,0.0174532925199433,0.0,1262]] WGS_1984_(ITRF00)_To_NAD_1983 PROJCS['NAD_1983_Albers',GEOGCS['GCS_North_American_1983',DATUM['D_North_American_1983',SPHEROID['GRS_1980',6378137.0,298.257222101]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Albers'],PARAMETER['False_Easting',400000.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',-84.0],PARAMETER['Standard_Parallel_1',24.0],PARAMETER['Standard_Parallel_2',31.5],PARAMETER['Latitude_Of_Origin',24.0],UNIT['Meter',1.0]]</Process><Process ToolSource="c:\program files (x86)\arcgis\desktop10.1\ArcToolbox\Toolboxes\Data Management Tools.tbx\Dissolve" Date="20141019" Time="104941">Dissolve bbend_sg M:\presentations\wqtrends_pres\data\bbend_sg_diss.shp FID;SEAGRASS # MULTI_PART DISSOLVE_LINES</Process></lineage><itemProps><itemName Sync="TRUE">bbend_sg_diss</itemName><imsContentType Sync="TRUE">002</imsContentType><itemSize Sync="TRUE">0.000</itemSize><itemLocation><linkage Sync="TRUE">file://\\aa.ad.epa.gov\ORD\GBR\Users\mbeck\presentations\wqtrends_pres\data\bbend_sg_diss.shp</linkage><protocol Sync="TRUE">Local Area Network</protocol></itemLocation></itemProps><coordRef><type Sync="TRUE">Geographic</type><geogcsn Sync="TRUE">GCS_WGS_1984</geogcsn><csUnits Sync="TRUE">Angular Unit: Degree (0.017453)</csUnits><peXml Sync="TRUE">&lt;GeographicCoordinateSystem xsi:type='typens:GeographicCoordinateSystem' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xs='http://www.w3.org/2001/XMLSchema' xmlns:typens='http://www.esri.com/schemas/ArcGIS/10.1'&gt;&lt;WKT&gt;GEOGCS[&amp;quot;GCS_WGS_1984&amp;quot;,DATUM[&amp;quot;D_WGS_1984&amp;quot;,SPHEROID[&amp;quot;WGS_1984&amp;quot;,6378137.0,298.257223563]],PRIMEM[&amp;quot;Greenwich&amp;quot;,0.0],UNIT[&amp;quot;Degree&amp;quot;,0.0174532925199433],METADATA[&amp;quot;World&amp;quot;,-180.0,-90.0,180.0,90.0,0.0,0.0174532925199433,0.0,1262],AUTHORITY[&amp;quot;EPSG&amp;quot;,4326]]&lt;/WKT&gt;&lt;XOrigin&gt;-400&lt;/XOrigin&gt;&lt;YOrigin&gt;-400&lt;/YOrigin&gt;&lt;XYScale&gt;11258999068426.238&lt;/XYScale&gt;&lt;ZOrigin&gt;-100000&lt;/ZOrigin&gt;&lt;ZScale&gt;10000&lt;/ZScale&gt;&lt;MOrigin&gt;-100000&lt;/MOrigin&gt;&lt;MScale&gt;10000&lt;/MScale&gt;&lt;XYTolerance&gt;8.983152841195215e-009&lt;/XYTolerance&gt;&lt;ZTolerance&gt;0.001&lt;/ZTolerance&gt;&lt;MTolerance&gt;0.001&lt;/MTolerance&gt;&lt;HighPrecision&gt;true&lt;/HighPrecision&gt;&lt;LeftLongitude&gt;-180&lt;/LeftLongitude&gt;&lt;WKID&gt;4326&lt;/WKID&gt;&lt;LatestWKID&gt;4326&lt;/LatestWKID&gt;&lt;/GeographicCoordinateSystem&gt;</peXml></coordRef></DataProperties><ArcGISFormat>1.0</ArcGISFormat></Esri><mdDateSt Sync="TRUE">20141019</mdDateSt><dataIdInfo><envirDesc Sync="TRUE">Microsoft Windows 7 Version 6.1 (Build 7601) Service Pack 1; Esri ArcGIS 10.1.0.3035</envirDesc><dataLang><languageCode Sync="TRUE" value="eng"></languageCode><countryCode value="USA" Sync="TRUE"></countryCode></dataLang><idCitation><resTitle Sync="TRUE">bbend_sg_diss</resTitle><presForm><PresFormCd Sync="TRUE" value="005"></PresFormCd></presForm></idCitation><spatRpType><SpatRepTypCd Sync="TRUE" value="001"></SpatRepTypCd></spatRpType></dataIdInfo><mdLang><languageCode Sync="TRUE" value="eng"></languageCode><countryCode value="USA" Sync="TRUE"></countryCode></mdLang><mdStanName Sync="TRUE">ISO 19115 Geographic Information - Metadata</mdStanName><mdStanVer Sync="TRUE">DIS_ESRI1.0</mdStanVer><mdChar><CharSetCd Sync="TRUE" value="006"></CharSetCd></mdChar><mdHrLv><ScopeCd Sync="TRUE" value="005"></ScopeCd></mdHrLv><mdHrLvName Sync="TRUE">dataset</mdHrLvName><distInfo><distributor><distorTran><onLineSrc><orDesc Sync="TRUE">002</orDesc><linkage Sync="TRUE">file://\\Bishop\nas1\MRGIS_shapefiles\2010_08_04current\benthic\seagrass_fl_poly\seagrass_fl_poly.shp</linkage><protocol Sync="TRUE">Local Area Network</protocol></onLineSrc><transSize Sync="TRUE">0.000</transSize></distorTran><distorFormat><formatName Sync="TRUE">Shapefile</formatName></distorFormat></distributor><distFormat><formatName Sync="TRUE">Shapefile</formatName></distFormat><distTranOps><transSize Sync="TRUE">0.000</transSize></distTranOps></distInfo><refSysInfo><RefSystem><refSysID><identCode Sync="TRUE" value="4326">NAD_1983_Albers</identCode><idCodeSpace Sync="TRUE">EPSG</idCodeSpace><idVersion Sync="TRUE">7.9.4</idVersion></refSysID></RefSystem></refSysInfo><spatRepInfo><VectSpatRep><geometObjs Name="bbend_sg_diss"><geoObjTyp><GeoObjTypCd value="002" Sync="TRUE"></GeoObjTypCd></geoObjTyp><geoObjCnt Sync="TRUE">0</geoObjCnt></geometObjs><topLvl><TopoLevCd value="001" Sync="TRUE"></TopoLevCd></topLvl></VectSpatRep></spatRepInfo></metadata>
