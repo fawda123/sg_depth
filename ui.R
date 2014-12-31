@@ -38,7 +38,7 @@ shinyUI(pageWithSidebar(
                  label = h3("Random seed"), 
                  min=1, 
                  max=5000, 
-                 value=1234, step = 1),
+                 value=123, step = 1),
     
     uiOutput("reserveControls"),
 
@@ -50,7 +50,7 @@ shinyUI(pageWithSidebar(
                  label = h3('Radius (dec. deg.)'), 
                  min=0, 
                  max=2, 
-                 value=0.06, step = 0.01),
+                 value=0.02, step = 0.01),
     
     selectInput("show_all", 
             label = h3("Show all estimates"), 
