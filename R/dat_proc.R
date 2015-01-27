@@ -172,8 +172,27 @@ dat <- dat[!is.na(dat$Latitude), ]
 dat$Date <- as.Date(as.character(dat$DateT), format = '%m/%d/%Y')
 dat$DateT <- NULL
 
+##
+# load segments from widget, clip stations accordingly
+library(maptools)
+library(sp)
+
 # tampa bay shapefile
 tb_seg <- readRDS('M:/docs/manuscripts/sgdepth_manu/data/tb_seg.rds')
+
+# secchi as spatial points data frame
+coords <- dat[, c('Longitude', 'Latitude')]
+dat <- dat[, !names(dat) %in% c('Longitude', 'Latitude')]
+coordinates(dat) <- coords
+
+# clip secchi data by segments
+sel <- !is.na(dat %over% tb_seg)[, 1]
+dat <- dat[sel, ]
+
+# save
+secc_tb <- dat
+save(secc_tb, file = 'data/secc_tb.RData')
+
 
 
 ######
