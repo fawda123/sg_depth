@@ -4,23 +4,23 @@
 # 
 # ######
 # # merge segment and depth data, Hagy supplementary data
-# seg_dat <- read.table('dat/sg_segs.txt', sep = ',', header = T)
-# dep_dat <- read.table('dat/sg_depths.txt', sep = ',', header = T)
+# seg_dat <- read.table('data/sg_segs.txt', sep = ',', header = T)
+# dep_dat <- read.table('data/sg_depths.txt', sep = ',', header = T)
 # 
 # sg_dat <- merge(seg_dat, dep_dat, by = 'SEGID', all = T)
-# save(sg_dat, file = 'dat/sg_dat.RData')
+# save(sg_dat, file = 'data/sg_dat.RData')
 # 
 # ######
 # # merge secchi data with location data
-# stat_dat <- read.csv('dat/Stations.csv')
-# secc_dat <- read.csv('dat/IWR40_Secchi_Depth.csv')
+# stat_dat <- read.csv('data/Stations.csv')
+# secc_dat <- read.csv('data/IWR40_Secchi_Depth.csv')
 # 
 # secc_dat <- merge(secc_dat, stat_dat[, c('Station_ID', 'Latitude', 'Longitude')],
 #   by.x = 'STATION', by.y = 'Station_ID', all.x = T)
-# save(secc_dat, file = 'dat/secc_dat.RData')
+# save(secc_dat, file = 'data/secc_dat.RData')
 # 
 # # for shapefile, slipped by segment in Arc
-# write.csv(secc_dat, 'dat/secc_dat.csv', quote = F, row.names = F)
+# write.csv(secc_dat, 'data/secc_dat.csv', quote = F, row.names = F)
 # 
 # ######
 # # subset segments shapefile by those that have depth of col data from manu
@@ -29,7 +29,7 @@
 #   'M:/GIS/seagrass/segs.shp',
 #   proj4string = CRS("+proj=longlat +datum=WGS84")
 #   )
-# load('dat/sg_dat.RData')
+# load('data/sg_dat.RData')
 # 
 # sel_vec <- as.numeric(as.character(segs_shp$SEGID)) %in% unique(sg_dat$SEGID)
 # segs_shp <- segs_shp[sel_vec, ]
@@ -88,14 +88,14 @@ writeSpatialShape(
 # 'SD.east.txt', 'SD.nw.txt', 'SD.sw.txt' are secchi text files from Jim's work 
 
 # load station data
-load(file = 'dat/iwr40_stations.RData')
+load(file = 'data/iwr40_stations.RData')
 
 # load secchi data
-secc1 <- read.table('dat/SD.east.txt', header = T, sep = '\t', 
+secc1 <- read.table('data/SD.east.txt', header = T, sep = '\t', 
   stringsAsFactors = F)
-secc2 <- read.table('dat/SD.nw.txt', header = T, sep = '\t', 
+secc2 <- read.table('data/SD.nw.txt', header = T, sep = '\t', 
   stringsAsFactors = F)
-secc3 <- read.table('dat/SD.sw.txt', header = T, sep = '\t', 
+secc3 <- read.table('data/SD.sw.txt', header = T, sep = '\t', 
   stringsAsFactors = F)
 secc <- rbind(secc1, secc2, secc3)
 names(secc)[1] <- 'Station_ID'
@@ -135,7 +135,46 @@ dat <- dat[sel, ]
 
 # save
 secc_seg <- dat
-save(secc_seg, file = 'dat/secc_seg.RData')
+save(secc_seg, file = 'data/secc_seg.RData')
+
+######
+# secchi data for all of Tampa Bay
+# uses Jim's secchi data
+
+rm(list = ls())
+
+# load station data
+load(file = 'data/iwr40_stations.RData')
+
+# load secchi data
+secc1 <- read.table('data/SD.east.txt', header = T, sep = '\t', 
+  stringsAsFactors = F)
+secc2 <- read.table('data/SD.nw.txt', header = T, sep = '\t', 
+  stringsAsFactors = F)
+secc3 <- read.table('data/SD.sw.txt', header = T, sep = '\t', 
+  stringsAsFactors = F)
+secc <- rbind(secc1, secc2, secc3)
+names(secc)[1] <- 'Station_ID'
+
+# merge secchi with lat/long stations info
+stat <- stat[, c('Station_ID', 'Latitude', 'Longitude')]
+dat <- merge(secc, stat, by = 'Station_ID', all.x = T)
+
+# retain relevant columns
+dat <- dat[!dat$SD.nond, ]
+dat <- dat[, c('Station_ID', 'DateT', 'SD',
+  'Latitude', 'Longitude')]
+
+# remove stations w/o locations
+dat <- dat[!is.na(dat$Latitude), ]
+
+# datetimestamp to posix, eastern time, no dst
+dat$Date <- as.Date(as.character(dat$DateT), format = '%m/%d/%Y')
+dat$DateT <- NULL
+
+# tampa bay shapefile
+tb_seg <- readRDS('M:/docs/manuscripts/sgdepth_manu/data/tb_seg.rds')
+
 
 ######
 # format all shapefiles for tb old tampa bay
@@ -193,6 +232,38 @@ writeSpatialShape(
   x = tmp, 
   fn = 'seagrass_gis/sgpts_2010_902.shp'
   )
+
+######
+# format tampa bay seagrass depht points for whole bay
+# used in manuscript, maybe
+
+# load original file
+sgpts_2010_tb <- foreign::read.dbf('L:/lab/FloridaCriteria/Seagrass_vs_Depth/09-Tampa_Bay/2010/Tampa_2010_Segments.dbf')
+
+x <- sgpts_2010_tb[, c('lat', 'lon', 'depth', 'Descript')]
+
+# rename depth, seagrass columns, specific to each file
+names(x)
+names(x)[names(x) %in% 'depth'] <- 'Depth'
+names(x)[names(x) %in% 'Descript'] <- 'Seagrass'
+
+# depth as positive, floor to zero
+x$Depth <- pmax(0, -1 * x$Depth)
+
+# convert seagrass values to 'Continuous', 'Discontinuous'
+# for IRL, 9113 is Patchy, 9116 is continuous, see docs on L drive
+newlevs <- c('Continuous', 'Discontinuous')
+levels(x$Seagrass) <- newlevs
+
+# convert to spatialpointsdataframe
+coords <- x[, c('lon', 'lat')]
+names(coords) <- c('coords.x1', 'coords.x2')
+x <- x[, c('Depth', 'Seagrass')]
+x <- SpatialPointsDataFrame(coords, x)
+
+sgpts_2010_tb <- x
+
+saveRDS(sgpts_2010_tb, 'data/sgpts_2010_tb.rds')
 
 ######
 # save all shapefiles to RData for quicker load
