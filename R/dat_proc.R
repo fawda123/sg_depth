@@ -116,22 +116,32 @@ dat <- dat[!is.na(dat$Latitude), ]
 dat$Date <- as.Date(as.character(dat$DateT), format = '%m/%d/%Y')
 dat$DateT <- NULL
 
-##
-# load segments from widget, clip stations accordingly
-library(maptools)
-library(sp)
-
-# load segs
-segs <- readShapeSpatial('seagrass_gis/all_segs.shp')
-
 # secchi as spatial points data frame
 coords <- dat[, c('Longitude', 'Latitude')]
 dat <- dat[, !names(dat) %in% c('Longitude', 'Latitude')]
 coordinates(dat) <- coords
 
+secc_all <- dat
+save(secc_all, file = 'data/secc_all.RData')
+
+######
+# get secchi data for each individual segment in the manuscript
+
+rm(list = ls())
+
+data(secc_all)
+
+# load segments from widget, clip stations accordingly
+library(maptools)
+library(sp)
+
+# load segs
+data(shps)
+segs <- shps[['all_segs.shp']]
+
 # clip secchi data by segments
-sel <- !is.na(dat %over% segs)[, 1]
-dat <- dat[sel, ]
+sel <- !is.na(secc_all %over% segs)[, 1]
+dat <- secc_all[sel, ]
 
 # save
 secc_seg <- dat
@@ -143,34 +153,7 @@ save(secc_seg, file = 'data/secc_seg.RData')
 
 rm(list = ls())
 
-# load station data
-load(file = 'data/iwr40_stations.RData')
-
-# load secchi data
-secc1 <- read.table('data/SD.east.txt', header = T, sep = '\t', 
-  stringsAsFactors = F)
-secc2 <- read.table('data/SD.nw.txt', header = T, sep = '\t', 
-  stringsAsFactors = F)
-secc3 <- read.table('data/SD.sw.txt', header = T, sep = '\t', 
-  stringsAsFactors = F)
-secc <- rbind(secc1, secc2, secc3)
-names(secc)[1] <- 'Station_ID'
-
-# merge secchi with lat/long stations info
-stat <- stat[, c('Station_ID', 'Latitude', 'Longitude')]
-dat <- merge(secc, stat, by = 'Station_ID', all.x = T)
-
-# retain relevant columns
-dat <- dat[!dat$SD.nond, ]
-dat <- dat[, c('Station_ID', 'DateT', 'SD',
-  'Latitude', 'Longitude')]
-
-# remove stations w/o locations
-dat <- dat[!is.na(dat$Latitude), ]
-
-# datetimestamp to posix, eastern time, no dst
-dat$Date <- as.Date(as.character(dat$DateT), format = '%m/%d/%Y')
-dat$DateT <- NULL
+data(secc_all)
 
 ##
 # load segments from widget, clip stations accordingly
@@ -180,11 +163,6 @@ library(sp)
 # tampa bay shapefile
 tb_seg <- readRDS('M:/docs/manuscripts/sgdepth_manu/data/tb_seg.rds')
 
-# secchi as spatial points data frame
-coords <- dat[, c('Longitude', 'Latitude')]
-dat <- dat[, !names(dat) %in% c('Longitude', 'Latitude')]
-coordinates(dat) <- coords
-
 # clip secchi data by segments
 sel <- !is.na(dat %over% tb_seg)[, 1]
 dat <- dat[sel, ]
@@ -193,6 +171,11 @@ dat <- dat[sel, ]
 secc_tb <- dat
 save(secc_tb, file = 'data/secc_tb.RData')
 
+######
+# secchi data for all of IRL
+rm(list = ls())
+
+data(secc_all)
 
 
 ######
@@ -283,6 +266,37 @@ x <- SpatialPointsDataFrame(coords, x)
 sgpts_2010_tb <- x
 
 saveRDS(sgpts_2010_tb, 'data/sgpts_2010_tb.rds')
+
+######
+# format irl seagrass points for entire lagoon
+# used in manuscript, maybe
+
+# load original file
+sgpts_2009_irl <- foreign::read.dbf('L:/lab/FloridaCriteria/Seagrass_vs_Depth/15-Indian_River/2009/Indian_2009_segments.dbf')
+
+x <- sgpts_2009_irl[, c('Lat', 'Lon', 'Depth', 'HABITAT')]
+
+# rename depth, seagrass columns, specific to each file
+names(x)
+names(x) <- c('lat', 'lon', 'Depth', 'Seagrass')
+
+# depth as positive, floor to zero
+x$Depth <- pmax(0, -1 * x$Depth)
+
+# convert seagrass values to 'Continuous', 'Discontinuous'
+# for IRL, 9113 is Patchy, 9116 is continuous, see docs on L drive
+newlevs <- c(NA, 'Discontinuous', 'Continuous', NA, NA)
+levels(x$Seagrass) <- newlevs
+
+# convert to spatialpointsdataframe
+coords <- x[, c('lon', 'lat')]
+names(coords) <- c('coords.x1', 'coords.x2')
+x <- x[, c('Depth', 'Seagrass')]
+x <- SpatialPointsDataFrame(coords, x)
+
+sgpts_2009_irl <- x
+
+saveRDS(sgpts_2009_irl, 'data/sgpts_2009_irl.rds')
 
 ######
 # save all shapefiles to RData for quicker load
