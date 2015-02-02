@@ -1,16 +1,18 @@
 library(shiny)
 
 # Define UI for application
-shinyUI(pageWithSidebar(
+shinyUI(fluidPage(
   
   # Application title
   headerPanel("Spatially referenced seagrass depth of colonization"),
   
   # Sidebar with a slider input for number of observations
   sidebarPanel(
+  
+    width = 3,
     
     selectInput("segment", 
-                label = h3("Select segment"), 
+                label = h4("Select segment"), 
                 choices = list(
                   "Big Bend 820 (2006)" = "820",
                   "Choctawhatchee Bay 303 (2007)" = "303",
@@ -30,12 +32,12 @@ shinyUI(pageWithSidebar(
                   selected = "820"),
     
     numericInput("grid_spc", 
-                 label = h3("Grid spacing (dec. deg.)"), 
+                 label = h4("Grid spacing (dec. deg.)"), 
                  min=0.005, 
                  max=0.1, 
                  value=0.02, step = 0.001),
     numericInput("grid_seed", 
-                 label = h3("Random seed"), 
+                 label = h4("Random seed"), 
                  min=1, 
                  max=5000, 
                  value=123, step = 1),
@@ -44,19 +46,19 @@ shinyUI(pageWithSidebar(
 
     checkboxInput("point_lab", 
                   label = "Label points as numbers",
-                  value = F),
+                  value = T),
     
     numericInput("radius", 
-                 label = h3('Radius (dec. deg.)'), 
+                 label = h4('Radius (dec. deg.)'), 
                  min=0, 
                  max=2, 
                  value=0.02, step = 0.01),
     
     selectInput("show_all", 
-            label = h3("Show all estimates"), 
+            label = h4("Show all estimates"), 
             choices = list(
               "No" = "nope",
-              "Depth with maximum seagrass" = "sg_max",
+              "Minimum depth of colonization" = "doc_min",
               "Median depth of colonization" = "doc_med",
               "Maximum depth of colonization" = "doc_max"
               ),
@@ -74,4 +76,5 @@ shinyUI(pageWithSidebar(
   mainPanel(
     plotOutput("simplot", width = "100%")
   )
+  
 ))

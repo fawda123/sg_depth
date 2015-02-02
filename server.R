@@ -36,7 +36,7 @@ shinyServer(function(input, output) {
     pts <- grid_est(seg_shp, spacing = grid_spc) 
     
     selectInput(inputId = 'test_point',
-                label = h3('Test point'),
+                label = h4('Test point'),
                 choices = 1:length(pts)
       )
     
