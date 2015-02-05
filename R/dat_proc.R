@@ -1,47 +1,9 @@
-# ######
-# # processing of seagrass data
-# # Aug. 2014
-# 
-# ######
-# # merge segment and depth data, Hagy supplementary data
-# seg_dat <- read.table('data/sg_segs.txt', sep = ',', header = T)
-# dep_dat <- read.table('data/sg_depths.txt', sep = ',', header = T)
-# 
-# sg_dat <- merge(seg_dat, dep_dat, by = 'SEGID', all = T)
-# save(sg_dat, file = 'data/sg_dat.RData')
-# 
-# ######
-# # merge secchi data with location data
-# stat_dat <- read.csv('data/Stations.csv')
-# secc_dat <- read.csv('data/IWR40_Secchi_Depth.csv')
-# 
-# secc_dat <- merge(secc_dat, stat_dat[, c('Station_ID', 'Latitude', 'Longitude')],
-#   by.x = 'STATION', by.y = 'Station_ID', all.x = T)
-# save(secc_dat, file = 'data/secc_dat.RData')
-# 
-# # for shapefile, slipped by segment in Arc
-# write.csv(secc_dat, 'data/secc_dat.csv', quote = F, row.names = F)
-# 
-# ######
-# # subset segments shapefile by those that have depth of col data from manu
-# 
-# segs_shp <- readShapePoly(
-#   'M:/GIS/seagrass/segs.shp',
-#   proj4string = CRS("+proj=longlat +datum=WGS84")
-#   )
-# load('data/sg_dat.RData')
-# 
-# sel_vec <- as.numeric(as.character(segs_shp$SEGID)) %in% unique(sg_dat$SEGID)
-# segs_shp <- segs_shp[sel_vec, ]
-# 
-# # save subset shapefile
-# # note this does not have projection
-# writePolyShape(
-#   x = segs_shp, 
-#   fn = 'M:/GIS/seagrass/sg_segs.shp'
-#   )
-# 
 ######
+# processing of seagrass data
+# Aug. 2014
+
+######
+# use this to standardize data for manuscript/shiny, use manually
 # renaming columns for shiny app
 # convert to positive depth values
 # floor depth values at zero
@@ -125,60 +87,6 @@ secc_all <- dat
 save(secc_all, file = 'data/secc_all.RData')
 
 ######
-# get secchi data for each individual segment in the manuscript
-
-rm(list = ls())
-
-data(secc_all)
-
-# load segments from widget, clip stations accordingly
-library(maptools)
-library(sp)
-
-# load segs
-data(shps)
-segs <- shps[['all_segs.shp']]
-
-# clip secchi data by segments
-sel <- !is.na(secc_all %over% segs)[, 1]
-dat <- secc_all[sel, ]
-
-# save
-secc_seg <- dat
-save(secc_seg, file = 'data/secc_seg.RData')
-
-######
-# secchi data for all of Tampa Bay
-# uses Jim's secchi data
-
-rm(list = ls())
-
-data(secc_all)
-
-##
-# load segments from widget, clip stations accordingly
-library(maptools)
-library(sp)
-
-# tampa bay shapefile
-tb_seg <- readRDS('M:/docs/manuscripts/sgdepth_manu/data/tb_seg.rds')
-
-# clip secchi data by segments
-sel <- !is.na(dat %over% tb_seg)[, 1]
-dat <- dat[sel, ]
-
-# save
-secc_tb <- dat
-save(secc_tb, file = 'data/secc_tb.RData')
-
-######
-# secchi data for all of IRL
-rm(list = ls())
-
-data(secc_all)
-
-
-######
 # format all shapefiles for tb old tampa bay
 
 # Tampa Bay year folders on L drive were copied to desktop 
@@ -240,9 +148,9 @@ writeSpatialShape(
 # used in manuscript, maybe
 
 # load original file
-sgpts_2010_tb <- foreign::read.dbf('L:/lab/FloridaCriteria/Seagrass_vs_Depth/09-Tampa_Bay/2010/Tampa_2010_Segments.dbf')
+raw <- foreign::read.dbf('M:/GIS/seagrass/sgpts_2010_tb.dbf')
 
-x <- sgpts_2010_tb[, c('lat', 'lon', 'depth', 'Descript')]
+x <- raw[, c('lat', 'lon', 'depth', 'Descript')]
 
 # rename depth, seagrass columns, specific to each file
 names(x)
@@ -265,16 +173,17 @@ x <- SpatialPointsDataFrame(coords, x)
 
 sgpts_2010_tb <- x
 
-saveRDS(sgpts_2010_tb, 'data/sgpts_2010_tb.rds')
+save(sgpts_2010_tb, file = 'data/sgpts_2010_tb.RData')
+save(sgpts_2010_tb, file = 'M:/docs/manuscripts/sgdepth_manu/data/sgpts_2010_tb.RData')
 
 ######
 # format irl seagrass points for entire lagoon
 # used in manuscript, maybe
 
 # load original file
-sgpts_2009_irl <- foreign::read.dbf('L:/lab/FloridaCriteria/Seagrass_vs_Depth/15-Indian_River/2009/Indian_2009_segments.dbf')
+raw <- foreign::read.dbf('M:/GIS/seagrass/sgpts_2009_irl.dbf')
 
-x <- sgpts_2009_irl[, c('Lat', 'Lon', 'Depth', 'HABITAT')]
+x <- raw[, c('Lat', 'Lon', 'Depth', 'HABITAT')]
 
 # rename depth, seagrass columns, specific to each file
 names(x)
@@ -296,15 +205,21 @@ x <- SpatialPointsDataFrame(coords, x)
 
 sgpts_2009_irl <- x
 
-saveRDS(sgpts_2009_irl, 'data/sgpts_2009_irl.rds')
+save(sgpts_2009_irl, file = 'data/sgpts_2009_irl.RData')
+save(sgpts_2009_irl, file = 'M:/docs/manuscripts/sgdepth_manu/data/sgpts_2009_irl.RData')
 
 ######
 # save all shapefiles to RData for quicker load
 # used in shiny
-to_load <- list.files('seagrass_gis', '\\.shp$')
+to_load <- c('seg_303.shp', 'seg_820.shp', 'seg_902.shp', 'seg_1502.shp', 'sgpts_2007_303.shp', 'sgpts_2006_820.shp', 'sgpts_2010_902.shp', 'sgpts_2009_1502.shp')
 shps <- vector('list', length = length(to_load))
 names(shps) <- to_load
 for(i in to_load) 
-  shps[[i]] <- readShapeSpatial(paste0('seagrass_gis/', i))
-save(shps, file = 'seagrass_gis/shps.RData')
+  shps[[i]] <- readShapeSpatial(paste0('M:/GIS/seagrass/', i))
+save(shps, file = 'data/shps.RData')
+save(shps, file = 'M:/docs/manuscripts/sgdepth_manu/data/shps.RData')
+
+
+
+
 
