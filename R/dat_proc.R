@@ -8,22 +8,22 @@
 # convert to positive depth values
 # floor depth values at zero
 
-to_load <- list.files('seagrass_gis', '\\.shp$')
+library(maptools)
+
+to_load <- list.files('M:/GIS/seagrass', '^sgpts.*\\.shp$')
 shps <- vector('list', length = length(to_load))
 names(shps) <- to_load
 for(i in to_load) 
-  shps[[i]] <- readShapeSpatial(paste0('seagrass_gis/', i))
-
-shps <- shps[grep('^sgpts', names(shps))]
+  shps[[i]] <- readShapeSpatial(paste0('M:/GIS/seagrass/', i))
 
 # which file to convert
-ind <- 4
+ind <- 1
 x <- shps[[ind]]
 
 # rename depth, seagrass columns, specific to each file
-# names(x)
-# names(x)[names(x) %in% 'depth'] <- 'Depth'
-# names(x)[names(x) %in% 'SEAGRASS'] <- 'Seagrass'
+names(x)
+names(x)[names(x) %in% 'depth'] <- 'Depth'
+names(x)[names(x) %in% 'SEAGRASS'] <- 'Seagrass'
 
 # depth as positive, floor to zero
 # x$Depth <- pmax(0, x$Depth)

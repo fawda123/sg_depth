@@ -683,7 +683,7 @@ sens.doc <- function(doc_in, level = 0.95, nsim = 10000, allsens = F, trace = T,
 #' 
 #' Get seagrass depth of colonization estimates at secchi locations using IWR database records, seagrass depth points, and segment polygon data
 #'
-#' @param secc_dat SpatialPointsDataFrame of secchi data for segments from IWR database 
+#' @param secc_dat SpatialPointsDataFrame of secchi data, can be from any location 
 #' @param sgpts_shp SpatialPointsDataFrame of seagrass depth points to sample
 #' @param seg_shp SpatialPlygonsDataFrame of segment polygon data
 #' @param radius sampling radius for estimating seagrass depth of colonization in decimal degress
@@ -700,6 +700,9 @@ secc_doc <- function(secc_dat, sgpts_shp, seg_shp, radius = 0.2, seg_pts_yr, tra
   # clip secchi data by segments
   sel <- !is.na(secc_dat %over% seg_shp)[, 1]
   secc <- secc_dat[sel, ]
+  
+  # stop if no secchi data in segment
+  if(nrow(secc) == 0) stop('No secchi data for segment')
   
   # get unique locations of secchi data
   uni_secc <- data.frame(secc)[, c('Station_ID', 'Longitude', 'Latitude')]
