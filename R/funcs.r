@@ -226,10 +226,9 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass', sg_cat = c
 # create a plot of doc estimates from doc_est, same inputs as doc_est
 # 'doc_in' doc object input from doc_est
 # 'sens' logical indicating of plot includes sensitivity estimates
-# 'allsens' logical indicating if upper, lower estimates for logistic curve are obtained
 # 'baseonly' logical indicating of only observed data are plotted
 # 'logisonly' logical indicating of only observed data and logistic curve are plotted
-plot.doc <- function(doc_in, sens = F, allsens = F, baseonly = F, logisonly = F){
+plot.doc <- function(doc_in, sens = F, baseonly = F, logisonly = F){
   
   to_plo <- data.frame(doc_in)
   ests <- attributes(doc_in)[c('doc_min', 'doc_med', 'doc_max')]
@@ -238,7 +237,7 @@ plot.doc <- function(doc_in, sens = F, allsens = F, baseonly = F, logisonly = F)
   # y, x axis limits
   y_lims <- 1.2 * max(na.omit(to_plo$sg_prp))
   y_lims <- c(-0.05 * y_lims, y_lims)
-  x_lims <- max(1.2 * max(na.omit(to_plo)$Depth), 1.2 * ests$doc_min)
+  x_lims <- max(1.2 * max(na.omit(to_plo)$Depth), 1.2 * ests$doc_min, na.rm = T)
   x_lims <- c(-0.025 * x_lims, x_lims)
 
   # base plot if no estimate is available
@@ -293,8 +292,8 @@ plot.doc <- function(doc_in, sens = F, allsens = F, baseonly = F, logisonly = F)
     )
     
     # get sensitivitity estimates shifts for polygon
-    up_shift <- attr(doc_in, 'upper_est')$up_shift
-    low_shift <- attr(doc_in, 'lower_est')$low_shift
+    upper_shift <- attr(doc_in, 'upper_est')$upper_shift
+    lower_shift <- attr(doc_in, 'lower_est')$lower_shift
     int_val <- est_fun(0)
     slope_val <- (-1 * int_val) + est_fun(1)
     
@@ -302,9 +301,9 @@ plot.doc <- function(doc_in, sens = F, allsens = F, baseonly = F, logisonly = F)
     xvals <- 0.7 * attr(doc_in, 'lower_est')$doc_min
     xvals <- c(xvals, 1.3 * attr(doc_in, 'upper_est')$doc_max)
     xvals <- seq(xvals[1], xvals[2], length = 20)
-    up_fun <- function(x) slope_val * x + int_val + up_shift
+    up_fun <- function(x) slope_val * x + int_val + upper_shift
     up_fun <- up_fun(xvals)
-    low_fun <- function(x) slope_val * x + int_val + low_shift
+    low_fun <- function(x) slope_val * x + int_val + lower_shift
     low_fun <- low_fun(xvals)
     poly_plo <- data.frame(x = c(xvals, rev(xvals)), y = c(low_fun, rev(up_fun)))
     
@@ -333,22 +332,7 @@ plot.doc <- function(doc_in, sens = F, allsens = F, baseonly = F, logisonly = F)
         ) +
       theme(legend.position = c(1, 1),
         legend.justification = c(1, 1)) 
-    
-    # add upper, lower estimates logistic curve
-    if(allsens){
-      
-      # run sensitivity analysis if not present
-      if(!'preds' %in% names(attr(doc_in, 'lower_est'))) 
-        doc_in <- sens(doc_in, allsens = T)
-      
-      lower_est <- attr(doc_in, 'lower_est')
-      upper_est <- attr(doc_in, 'upper_est')
-      p <- p +
-        geom_line(data = lower_est$preds, aes(y = sg_prp), colour = 'tomato') +
-        geom_line(data = upper_est$preds, aes(y = sg_prp), colour = 'tomato')
-      
-    }
-    
+  
     
   }
   
@@ -501,10 +485,9 @@ g_legend<-function(a.gplot){
 # doc_in doc input object
 # level percent level of confidence intervals
 # nsim number of monte carlo simulations for each value in newdata
-# allsens logical indicating if confidence value is predicted for all values in new data, done for plotting, otherwise, only the three locations where the depth estimates are obtained
 # trace logical for counter output
 sens <- function(doc_in, ...) UseMethod('sens')
-sens.doc <- function(doc_in, level = 0.95, nsim = 10000, allsens = F, trace = T, ...){
+sens.doc <- function(doc_in, level = 0.95, nsim = 10000, trace = T, ...){
    
   # get model from doc_in for vcov matrix
   mod <- attr(doc_in, 'logis_mod')
@@ -520,155 +503,77 @@ sens.doc <- function(doc_in, level = 0.95, nsim = 10000, allsens = F, trace = T,
     return(doc_in)
   }
   
-  # if sens is for plotting, get conf intervalsfor all depth values
-  if(allsens){
-    
-    newdata <- attr(doc_in, 'pred')[, 'Depth', drop = F]
-    inflect <- coefficients(mod)['xmid']
-    to_rep <- which.min(abs(newdata[, 1] - inflect))
-    newdata[to_rep, ] <- inflect
-    
-  # otherwise, only for inflection point of sslogis
-  } else {
-   
-    newdata <- coefficients(mod)['xmid']
-    newdata <- data.frame(Depth = newdata)
-    
-  }
-  
-  # extract predictor variable name   
-  predNAME <- names(newdata)
-   
+  # predictor value
+  Depth <- coefficients(mod)['xmid']
+  names(Depth) <- 'Depth'
+ 
   # get parameter coefficients from model
   COEF <- coef(mod)
      
   ## get variance-covariance matrix from model
   VCOV <- vcov(mod)
-   
-  # augment variance-covariance matrix for 'mvrnorm' 
-  # by adding a column/row for 'error in x'
+
+  # add depth value to vcov matrix
   NCOL <- ncol(VCOV)
   ADD1 <- c(rep(0, NCOL))
   ADD1 <- matrix(ADD1, ncol = 1)
-  colnames(ADD1) <- predNAME[1]
+  colnames(ADD1) <- names(Depth)
   VCOV <- cbind(VCOV, ADD1)
   ADD2 <- c(rep(0, NCOL + 1))
   ADD2 <- matrix(ADD2, nrow = 1)
-  rownames(ADD2) <- predNAME[1]
+  rownames(ADD2) <- names(Depth)
   VCOV <- rbind(VCOV, ADD2) 
-         
-  # iterate over all entries in 'newdata' as in usual 'predict.' functions
-  # NR is number of its, varPLACE index in VCOV for exp var
-  NR <- nrow(newdata)
-  varPLACE <- ncol(VCOV)   
-   
-  # define counter function
-  counter <- function (i) 
-  {
-    if (i%%10 == 0) 
-      cat(i)
-    else cat(".")
-    flush.console()
-  }
-   
-  outMAT <- matrix(nrow = NR, ncol = 7) 
-   
-  if(trace) cat('Simulations for uncertainty estimates...\n')
   
-  for (i in 1:NR) {
+  # create mean vector for 'mvrnorm'
+  # these are expected values for coefficients and input value
+  MU <- c(COEF, Depth)
   
-    if(trace) counter(i)
-   
-    # get predictor values and optional errors
-    predVAL <- newdata[i, 1]
-    if (ncol(newdata) == 2){ 
-      predERROR <- newdata[i, 2] 
-    } else {
-      predERROR <- 0
-    }
-    names(predVAL) <- predNAME[1] 
-    names(predERROR) <- predNAME[1] 
-     
-    # create mean vector for 'mvrnorm'
-    # these are expected values for coefficients and input value
-    MU <- c(COEF, predVAL)
-     
-    # create variance-covariance matrix for 'mvrnorm'
-    # by putting error^2 in lower-right position of VCOV
-    newVCOV <- VCOV
-    newVCOV[varPLACE, varPLACE] <- predERROR^2
-     
-    # create MC simulation matrix
-    simMAT <- MASS::mvrnorm(n = nsim, mu = MU, Sigma = newVCOV, empirical = TRUE)
-     
-    # evaluate expression on rows of simMAT
-    EVAL <- eval(expression(SSlogis(Depth, Asym, xmid, scal)), 
-      envir = as.data.frame(simMAT))
-
-    # collect statistics
-    PRED <- data.frame(predVAL)
-    colnames(PRED) <- predNAME[1]  
-    FITTED <- predict(mod, newdata = data.frame(PRED))
-    MEAN.sim <- mean(EVAL, na.rm = TRUE)
-    SD.sim <- sd(EVAL, na.rm = TRUE)
-    MEDIAN.sim <- median(EVAL, na.rm = TRUE)
-    MAD.sim <- mad(EVAL, na.rm = TRUE)
-    QUANT <- quantile(EVAL, c((1 - level)/2, level + (1 - level)/2))
-    RES <- c(FITTED, MEAN.sim, SD.sim, MEDIAN.sim, MAD.sim, QUANT[1], QUANT[2])
-    outMAT[i, ] <- RES
-    
-  }
-   
-  outMAT <- data.frame(newdata[, 'Depth'], outMAT)
-  colnames(outMAT) <- c('Depth', 'fit', 'mean', 'sd', 'median', 'mad', 'low', 'hi')
-  rownames(outMAT) <- NULL
-   
+  # simulate
+  simMAT <- MASS::mvrnorm(n = nsim, mu = MU, Sigma = VCOV, empirical = TRUE)
+  
+  # evaluate expression on rows of simMAT
+  # gets simulated values of sg_prp on y-axis at inflection depth
+  EVAL <- eval(expression(SSlogis(Depth, Asym, xmid, scal)), 
+    envir = as.data.frame(simMAT))
+  
+  # summarize predictions by quantiles, i.e., lower, upper bounds on sg_prp
+  QUANT <- as.numeric(quantile(EVAL, c((1 - level)/2, level + (1 - level)/2)))
+  
   if(trace) cat("\n")
   
   ## get lower and upper bounds on doc estimates
+  # from simulations above
   
-  # which row in outmat is asymptote depth
-  asym_dep <- which(outMAT$Depth == coefficients(mod)['xmid'])
-  asym_dep <- outMAT[asym_dep, ]
+  # sg_prp value at predicted inflection point from model
+  sg_prp <- as.numeric(predict(mod, newdata = data.frame(Depth)))
   
-  # get slope, intercept from 'est_fun' in 'doc_in'
+  # get slope, intercept of original linear model from 'est_fun' in 'doc_in'
   int_val <- est_fun(0)
-  slope_val <- (-1 * int_val) + est_fun(1)
-  low_shift <- asym_dep[, 'low'] - asym_dep[, 'fit']
-  up_shift <- asym_dep[, 'hi'] - asym_dep[, 'fit']
+  slope_val <- est_fun(1) - int_val
   
-  # lower estimates based on intercept shift
-  doc_max <- max(c(0, -1 * ((int_val + low_shift) / slope_val)))
-  doc_min <- max(c(0, (coefficients(mod)['Asym'] - (int_val + low_shift))/slope_val))
-  doc_med <- max(c(0, doc_min + ((doc_max - doc_min)/2)))
-  lower_est <- list(low_shift = low_shift, doc_min = doc_min, doc_med = doc_med, doc_max = doc_max)
-    
-  # upper estimates based on intercept shift
-  doc_max <- max(c(0, -1 * ((int_val + up_shift) / slope_val)))
-  doc_min <- max(c(0, (coefficients(mod)['Asym'] - (int_val + up_shift))/slope_val))
-  doc_med <- max(c(0, doc_min + ((doc_max - doc_min)/2)))
-  upper_est <- list(up_shift = up_shift, doc_min = doc_min, doc_med = doc_med, doc_max = doc_max)
+  # shift to apply to intercept based on simulationss
+  up_shift <- QUANT[2] - sg_prp
+  lo_shift <- QUANT[1] - sg_prp
   
-  # add lower, upper curve predictions if for plotting
-  if(allsens){
+  # identify x values at sg_prp = 0 for upper and lower limits of curve
+  upper_est <- -1 * (up_shift + int_val) / slope_val
+  lower_est <- -1 * (lo_shift + int_val) / slope_val
+  
+  # figure out upper lower bounds based on difference from doc_max
+  upper_shift <- upper_est - attr(doc_in, 'doc_max')
+  lower_shift <- lower_est - attr(doc_in, 'doc_max')
+  
+  # lower estimates based on uncertainty
+  doc_max <- lower_shift + attr(doc_in, 'doc_max')
+  doc_min <- lower_shift + attr(doc_in, 'doc_min')
+  doc_med <- lower_shift + attr(doc_in, 'doc_med')
+  lower_est <- list(lower_shift = lower_shift, doc_min = doc_min, doc_med = doc_med, doc_max = doc_max)
     
-    # lower limits
-    pred_dat <- data.frame(
-      Depth = newdata$Depth,
-      sg_prp = outMAT[, 'low']
-    )
-    lower_pred <- logis_est(pred_dat)
-    lower_est$preds <- lower_pred$pred
-    
-    # upper limits
-    pred_dat <- data.frame(
-      Depth = newdata$Depth, 
-      sg_prp = outMAT[, 'hi']
-    )
-    upper_pred <- logis_est(pred_dat)
-    upper_est$preds <- upper_pred$pred
-    
-  }
+  # upper estimates based on uncertainty
+  doc_max <- upper_shift + attr(doc_in, 'doc_max')
+  doc_min <- upper_shift + attr(doc_in, 'doc_min')
+  doc_med <- upper_shift + attr(doc_in, 'doc_med')
+  upper_est <- list(upper_shift = upper_shift, doc_min = doc_min, doc_med = doc_med, doc_max = doc_max)
   
   # output
   # fill lower_est, upper_est attributes
@@ -777,3 +682,19 @@ secc_doc <- function(secc_dat, sgpts_shp, seg_shp, radius = 0.2, seg_pts_yr, tra
   return(out)
 
 }
+
+######
+# color function
+col_fun <- function(x, cols = c('purple', 'blue', 'lightblue')){
+  vals_in <- scales::rescale(x, c(0, 1))
+  dim_vals <- dim(vals_in)
+  nms <- names(vals_in)
+  ramp <- colorRamp(cols)
+  cols <- ramp(unlist(c(vals_in)))
+  col <- rgb(cols, max = 255)
+  out <- matrix(col, ncol = dim_vals[2], nrow = dim_vals[1], byrow = F)
+  out <- data.frame(out, stringsAsFactors = F)
+  names(out) <- nms
+  return(out)
+}
+

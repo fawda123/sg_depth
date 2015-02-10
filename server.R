@@ -86,6 +86,10 @@ shinyServer(function(input, output) {
 			# combine in data frame for plotting
 			maxd <- data.frame(pts, zmax_all = do.call('c', maxd))
     	
+      # remove extreme values
+      maxd <- na.omit(maxd)
+      maxd <- maxd[maxd$zmax_all < quantile(maxd$zmax_all, 0.99), ]
+      
       # kriging of all estimates
       if(show_krige){
           
@@ -120,8 +124,8 @@ shinyServer(function(input, output) {
         
       	# get values for combined legend
   			rngs <- range(maxd$zmax_all, na.rm = T)
-  			brks <- seq(rngs[1], rngs[2], length = 5)
-  			labs <- format(round(brks, 1), nsmall = 1, digits =1)
+  			brks <- seq(rngs[1], rngs[2], length = 4)
+  			labs <- format(brks, nsmall = 1, digits =1)
   			
       	##
       	# plot
@@ -144,7 +148,7 @@ shinyServer(function(input, output) {
   				scale_colour_gradientn(name = "Depth estimate", 
   					breaks = brks, 
   					labels = labs,
-            colours = brewer.pal(7, 'Spectral')
+            colours = c('purple', 'blue', 'lightblue')
             ) + 
   			 	guides(colour = guide_legend())
   			   
@@ -169,7 +173,7 @@ shinyServer(function(input, output) {
 			  
     # individual estimates
     } else {
-    
+      
       # point from random points for buffer
       test_pt <- pts[test_point, ]
   
@@ -217,8 +221,8 @@ shinyServer(function(input, output) {
 			est_pts <- data.frame(buff_pts)
       
 			# data
-			dat <- doc_est(est_pts)
-		  
+			dat <- doc_est(est_pts)   
+      
       # logistic curve plot
       p2 <- plot(dat)
       

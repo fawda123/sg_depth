@@ -29,7 +29,7 @@ shinyUI(fluidPage(
                   "Old Tampa Bay 902 (2008)" = "2008_902",
                   "Old Tampa Bay 902 (2010)" = "2010_902"
                   ),
-                  selected = "820"),
+                  selected = "2010_902"),
     
     numericInput("grid_spc", 
                  label = h4("Grid spacing (dec. deg.)"), 
