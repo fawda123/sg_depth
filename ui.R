@@ -58,9 +58,9 @@ shinyUI(fluidPage(
             label = h4("Show all estimates"), 
             choices = list(
               "No" = "nope",
-              "Minimum depth of colonization" = "doc_min",
-              "Median depth of colonization" = "doc_med",
-              "Maximum depth of colonization" = "doc_max"
+              "Minimum depth of colonization" = "z_min",
+              "Median depth of colonization" = "z_med",
+              "Maximum depth of colonization" = "z_max"
               ),
               selected = "nope"),
     

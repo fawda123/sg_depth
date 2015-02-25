@@ -16,7 +16,7 @@ source('R/funcs.r')
 
 ##
 # load shapefile data
-load('data/shps.RData')
+data(shps)
 
 # set ggplot theme
 theme_set(theme_bw())
