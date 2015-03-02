@@ -18,7 +18,7 @@
 doc <- function(ls_in){
     
   # sanity check
-  if(any(!names(ls_in) %in% c('data', 'preds', 'logis_mod', 'est_fun', 'z_min', 'z_med', 'z_max', 'lower_est', 'upper_est'))) stop('Incorrect input for doc object')
+  if(any(!names(ls_in) %in% c('data', 'preds', 'logis_mod', 'est_fun', 'z_cmin', 'z_cmed', 'z_cmax', 'lower_est', 'upper_est'))) stop('Incorrect input for doc object')
 
   # create class, with multiple attributes
   structure(
@@ -27,9 +27,9 @@ doc <- function(ls_in){
     preds = ls_in$preds,
     logis_mod = ls_in$logis_mod, 
     est_fun = ls_in$est_fun,
-    z_min = ls_in$z_min,
-    z_med = ls_in$z_med, 
-    z_max = ls_in$z_max,
+    z_cmin = ls_in$z_cmin,
+    z_cmed = ls_in$z_cmed, 
+    z_cmax = ls_in$z_cmax,
     lower_est = NA,
     upper_est = NA
     )
@@ -80,7 +80,7 @@ logis_est <- function(dat_in, resp = 'sg_prp', new_vals = 500){
     pred <- rep(NA_real_, length = length(new.x))
     asym <- NA_real_
     logis_mod <- NA
-    message('Cannot fit curve to data\n')
+    message('Cannot fit curve to seagrass data\n')
   } else {
 	  pred <- as.numeric(predict(mod, 
 		  newdata = data.frame(Depth = new.x)))
@@ -113,9 +113,9 @@ get_ests <- function(dat_in, asym){
   ind_min <- which.min(inflect)
     
   est_fun <- NA
-  z_min <- NA
-  z_med <- NA
-  z_max <- NA
+  z_cmin <- NA
+  z_cmed <- NA
+  z_cmax <- NA
   
   # get curve estimate if the minimum slope is not the last value
   if(ind_min != (nrow(dat_in) - 1)){
@@ -124,18 +124,18 @@ get_ests <- function(dat_in, asym){
     slope_val <- inflect[ind_min]
     int_val <- inflect_val[, 2] - slope_val * inflect_val[, 1]
     est_fun <- function(x) slope_val * x + int_val
-    z_max <- -1 * int_val / slope_val
+    z_cmax <- -1 * int_val / slope_val
     
-    # get z_med, halfway between z_min and z_max
-    # z_min is based on asymptote intercept with linear reg
-    # z_min defaults to zero if value is extrapolated
-    z_min <- max(c(0, (asym - int_val)/slope_val))
-    z_med  <- z_min + ((z_max - z_min)/2)
+    # get z_cmed, halfway between z_cmin and z_cmax
+    # z_cmin is based on asymptote intercept with linear reg
+    # z_cmin defaults to zero if value is extrapolated
+    z_cmin <- max(c(0, (asym - int_val)/slope_val))
+    z_cmed  <- z_cmin + ((z_cmax - z_cmin)/2)
 
   }
   
   # output
-  out <- list(preds = dat_in, est_fun = est_fun, z_min = z_min, z_med = z_med, z_max = z_max)
+  out <- list(preds = dat_in, est_fun = est_fun, z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax)
   return(out)
   
 }
@@ -194,7 +194,7 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass', sg_cat = c
     
     # create doc output
     ls_in <- list(data = pts, preds = preds, logis_mod = logis_mod, est_fun = NA, 
-      z_min = NA, z_med = NA, z_max = NA, lower_est = NA, upper_est = NA)
+      z_cmin = NA, z_cmed = NA, z_cmax = NA, lower_est = NA, upper_est = NA)
     
     out <- doc(ls_in)
     return(out)
@@ -205,7 +205,7 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass', sg_cat = c
   if(!with(preds, all(sg_prp == cummin(sg_prp)))){
     
     ls_in <- list(data = pts, preds = preds, logis_mod = logis_mod, est_fun = NA, 
-      z_min = NA, z_med = NA, z_max = NA, lower_est = NA, upper_est = NA)
+      z_cmin = NA, z_cmed = NA, z_cmax = NA, lower_est = NA, upper_est = NA)
     
     out <- doc(ls_in)
     return(out)
@@ -216,13 +216,13 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass', sg_cat = c
   ests <- get_ests(preds, asym)
   preds <- ests[['preds']]
   est_fun <- ests[['est_fun']]
-  z_min <- ests[['z_min']]
-  z_med <- ests[['z_med']]
-  z_max <- ests[['z_max']]
+  z_cmin <- ests[['z_cmin']]
+  z_cmed <- ests[['z_cmed']]
+  z_cmax <- ests[['z_cmax']]
     
   # all output
   ls_in <- list(data = pts, preds = preds, logis_mod = logis_mod, est_fun = est_fun, 
-    z_min = z_min, z_med = z_med, z_max = z_max, lower_est = NA, 
+    z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax, lower_est = NA, 
     upper_est = NA)
   
   out <- doc(ls_in)
@@ -239,13 +239,13 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass', sg_cat = c
 plot.doc <- function(doc_in, sens = F, baseonly = F, logisonly = F){
   
   to_plo <- data.frame(doc_in)
-  ests <- attributes(doc_in)[c('z_min', 'z_med', 'z_max')]
+  ests <- attributes(doc_in)[c('z_cmin', 'z_cmed', 'z_cmax')]
   est_fun <- attr(doc_in, 'est_fun')
   
   # y, x axis limits
   y_lims <- 1.2 * max(na.omit(to_plo$sg_prp))
   y_lims <- c(-0.05 * y_lims, y_lims)
-  x_lims <- max(1.2 * max(na.omit(to_plo)$Depth), 1.2 * ests$z_min, na.rm = T)
+  x_lims <- max(1.2 * max(na.omit(to_plo)$Depth), 1.2 * ests$z_cmin, na.rm = T)
   x_lims <- c(-0.025 * x_lims, x_lims)
 
   # base plot if no estimate is available
@@ -258,9 +258,9 @@ plot.doc <- function(doc_in, sens = F, baseonly = F, logisonly = F){
   
   if(baseonly) return(p)
   
-  # get y value from est_fun for z_min and z_med
+  # get y value from est_fun for z_cmin and z_cmed
   yends <- try({
-    with(attributes(doc_in), est_fun(c(z_min, z_med)))
+    with(attributes(doc_in), est_fun(c(z_cmin, z_cmed)))
     }, silent = T)
   
   # add to baseplot if estimate is available
@@ -274,12 +274,10 @@ plot.doc <- function(doc_in, sens = F, baseonly = F, logisonly = F){
       Depth = unlist(ests), 
       yvals = rep(0, 3)
     )
-    get_vals <- c('z_min', 'z_med', 'z_max')
+    get_vals <- c('z_cmin', 'z_cmed', 'z_cmax')
     doc_in <- sens(doc_in, trace = F)
     lowers <- round(unlist(attr(doc_in, 'lower_est')[get_vals]), 2)
     uppers <- round(unlist(attr(doc_in, 'upper_est')[get_vals]), 2)
-    
-    # browser()
     
     # return fig with pts and logistic curve only
     if(logisonly){
@@ -290,17 +288,19 @@ plot.doc <- function(doc_in, sens = F, baseonly = F, logisonly = F){
       return(p)
       
     }
-      
+    
     # some formatting crap
     pt_cols <- brewer.pal(nrow(to_plo4), 'Blues')
-    leg_lab <- paste0(
-      c('Z min ', 'Z med ', 'Z max '),
-      round(to_plo4$Depth, 2), 
-      rep(' (', 3), 
-      lowers, rep(', ', 3), 
-      uppers, rep(')', 3)
-    )
-    
+
+    # legend labels 
+    leg_dep <- format(round(to_plo4$Depth, 2), nsmall = 2)
+    leg_low <- format(round(lowers, 2), nsmall = 2)
+    leg_ups <- format(round(uppers, 2), nsmall = 2)
+    leg_labmin <- bquote(italic('Z' ['c, min']) ~ .(leg_dep[1]) ~ '(' ~ .(leg_low[1]) ~ ', ' ~ .(leg_ups[1]) ~ ')')
+    leg_labmed <- bquote(italic('Z' ['c, med']) ~ .(leg_dep[2]) ~ '(' ~ .(leg_low[2]) ~ ', ' ~ .(leg_ups[2]) ~ ')')
+    leg_labmax <- bquote(italic('Z' ['c, max']) ~ .(leg_dep[3]) ~ '(' ~ .(leg_low[3]) ~ ', ' ~ .(leg_ups[3]) ~ ')')
+    leg_lab <- c(leg_labmin, leg_labmed, leg_labmax)
+      
     # get sensitivitity estimates shifts for polygon
     upper_shift <- attr(doc_in, 'upper_est')$upper_shift
     lower_shift <- attr(doc_in, 'lower_est')$lower_shift
@@ -308,8 +308,8 @@ plot.doc <- function(doc_in, sens = F, baseonly = F, logisonly = F){
     slope_val <- (-1 * int_val) + est_fun(1)
     
     # get polygon of uncertainy around inflection point
-    xvals <- 0.7 * attr(doc_in, 'lower_est')$z_min
-    xvals <- c(xvals, 1.3 * attr(doc_in, 'upper_est')$z_max)
+    xvals <- 0.7 * attr(doc_in, 'lower_est')$z_cmin
+    xvals <- c(xvals, 1.3 * attr(doc_in, 'upper_est')$z_cmax)
     xvals <- seq(xvals[1], xvals[2], length = 20)
     up_fun <- function(x) slope_val * x + int_val + upper_shift
     up_fun <- up_fun(xvals)
@@ -327,10 +327,10 @@ plot.doc <- function(doc_in, sens = F, baseonly = F, logisonly = F){
       coord_cartesian(xlim = x_lims, ylim = y_lims) + 
       stat_function(fun = est_fun, colour = 'lightgreen', size = 1.5, 
         alpha = 0.8) +
-      geom_segment(x = ests$z_min, y = 0, xend = ests$z_min, 
+      geom_segment(x = ests$z_cmin, y = 0, xend = ests$z_cmin, 
         yend = yends[1], linetype = 'dashed', colour = 'lightgreen',
         size = 1.5, alpha = 0.6) +
-      geom_segment(x = ests$z_med, y = 0, xend = ests$z_med, 
+      geom_segment(x = ests$z_cmed, y = 0, xend = ests$z_cmed, 
         yend = yends[2], linetype = 'dashed', colour = 'lightgreen',
         size = 1.5, alpha = 0.6) +
       geom_point(data = to_plo4, 
@@ -421,13 +421,14 @@ buff_ext <- function(pts, center, buff = 0.03){
 #' @param rem_miss logical indicating if unestimable points are removed from the output, default \code{TRUE}
 #' @param trace logical indicating if progress is returned in console, default \code{FALSE}
 #' @param out_sens logical indicating if output should include lower and upper estimates of seagrass growth limits
+#' @param ... arguments passed to \code{\link{sens}}
 #' 
 #' @details This function estimates three seagrass depth of colonization values for each point in a sampling grid.  Functions \code{\link{buff_ext} and \code{\link{doc_est}} are used iteratively for each point in the sample grid.
 #' 
 #' @import sp
 #' 
 #' @return 
-doc_est_grd <- function(grid_in, dat_in, radius = 0.06, rem_miss = TRUE, trace = FALSE, out_sens = F){
+doc_est_grd <- function(grid_in, dat_in, radius = 0.06, rem_miss = TRUE, trace = FALSE, out_sens = F, ...){
       
   # get estimates for each point
   maxd <- vector('list', length = length(grid_in))
@@ -445,8 +446,8 @@ doc_est_grd <- function(grid_in, dat_in, radius = 0.06, rem_miss = TRUE, trace =
     
   	if('try-error' %in% class(ests)){ ests <- rep(NA, 9)
     } else {
-      get_ests <- c('z_min', 'z_med', 'z_max')
-      ests <- sens(ests, trace = F)
+      get_ests <- c('z_cmin', 'z_cmed', 'z_cmax')
+      ests <- sens(ests, trace = F, ...)
       lower <- unlist(attr(ests, 'lower_est')[get_ests])
       upper <- unlist(attr(ests, 'upper_est')[get_ests])
       actual <- unlist(attributes(ests)[get_ests])
@@ -497,19 +498,19 @@ g_legend<-function(a.gplot){
 # nsim number of monte carlo simulations for each value in newdata
 # trace logical for counter output
 sens <- function(doc_in, ...) UseMethod('sens')
-sens.doc <- function(doc_in, level = 0.95, nsim = 10000, trace = T, ...){
+sens.doc <- function(doc_in, level = 0.95, nsim = 10000, trace = T, remzero = T, ...){
    
   # get model from doc_in for vcov matrix
   mod <- attr(doc_in, 'logis_mod')
   if(!'nls' %in% class(mod)){
-    warning('No model in object')
+    message('No model in object')
     return(doc_in)
   }
   
   # get linear model from doc_in
   est_fun <- attr(doc_in, 'est_fun')
   if(!'function' %in% class(est_fun)){
-    warning('Inadequate logistic model')
+    message('Inadequate logistic model')
     return(doc_in)
   }
   
@@ -569,21 +570,32 @@ sens.doc <- function(doc_in, level = 0.95, nsim = 10000, trace = T, ...){
   upper_est <- -1 * (up_shift + int_val) / slope_val
   lower_est <- -1 * (lo_shift + int_val) / slope_val
   
-  # figure out upper lower bounds based on difference from z_max
-  upper_shift <- upper_est - attr(doc_in, 'z_max')
-  lower_shift <- lower_est - attr(doc_in, 'z_max')
+  # figure out upper lower bounds based on difference from z_cmax
+  upper_shift <- upper_est - attr(doc_in, 'z_cmax')
+  lower_shift <- lower_est - attr(doc_in, 'z_cmax')
   
   # lower estimates based on uncertainty
-  z_max <- lower_shift + attr(doc_in, 'z_max')
-  z_min <- lower_shift + attr(doc_in, 'z_min')
-  z_med <- lower_shift + attr(doc_in, 'z_med')
-  lower_est <- list(lower_shift = lower_shift, z_min = z_min, z_med = z_med, z_max = z_max)
+  z_cmax <- lower_shift + attr(doc_in, 'z_cmax')
+  z_cmin <- lower_shift + attr(doc_in, 'z_cmin')
+  z_cmed <- lower_shift + attr(doc_in, 'z_cmed')
+  lower_est <- list(lower_shift = lower_shift, z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax)
     
   # upper estimates based on uncertainty
-  z_max <- upper_shift + attr(doc_in, 'z_max')
-  z_min <- upper_shift + attr(doc_in, 'z_min')
-  z_med <- upper_shift + attr(doc_in, 'z_med')
-  upper_est <- list(upper_shift = upper_shift, z_min = z_min, z_med = z_med, z_max = z_max)
+  z_cmax <- upper_shift + attr(doc_in, 'z_cmax')
+  z_cmin <- upper_shift + attr(doc_in, 'z_cmin')
+  z_cmed <- upper_shift + attr(doc_in, 'z_cmed')
+  upper_est <- list(upper_shift = upper_shift, z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax)
+  
+  # replace all estimates with NA if z_cmax confidence interval includes zero
+  if(remzero & lower_est$z_cmax <= 0){
+
+    attr(doc_in, 'z_cmax') <- NA
+    attr(doc_in, 'z_cmin') <- NA
+    attr(doc_in, 'z_cmed') <- NA
+    
+    return(doc_in)
+    
+  }
   
   # output
   # fill lower_est, upper_est attributes
@@ -631,6 +643,7 @@ secc_doc <- function(secc_dat, sgpts_shp, seg_shp, radius = 0.2, seg_pts_yr, tra
   
   # get sg doc estimates for each location with secchi data
   maxd <- list()
+  maxd_conf <- list()
   for(i in 1:length(uni_secc)){
     
     if(trace) cat(length(uni_secc) - i, '\t')
@@ -640,15 +653,21 @@ secc_doc <- function(secc_dat, sgpts_shp, seg_shp, radius = 0.2, seg_pts_yr, tra
       buff_pts <- buff_ext(sgpts_shp, eval_pt, buff = radius)
       est_pts <- data.frame(buff_pts)
       doc_single <- doc_est(est_pts)
-      attr(doc_single, 'z_max')
-    })
-  	if('try-error' %in% class(ests)) ests <- NA
-    maxd[[i]] <- ests
+      doc_single <- sens(doc_single)
+      upper_conf <- attr(doc_single, 'upper_est')$upper_shift
+      lower_conf <- attr(doc_single, 'lower_est')$lower_shift
+      bound_conf <- upper_conf - lower_conf
+      z_cmax <- attr(doc_single, c('z_cmax'))
+      c(z_cmax, bound_conf)
+    },  silent = T)
+  	if('try-error' %in% class(ests)) ests <- c(NA, NA)
+    maxd[[i]] <- ests[1]
+    maxd_conf[[i]] <- ests[2]
     
   }
   
   # dataframe of all maximum depth results
-  maxd <- data.frame(uni_secc, zmax_all = do.call('c', maxd))
+  maxd <- data.frame(uni_secc, z_cmax_all = do.call('c', maxd), maxd_conf = do.call('c', maxd_conf))
   
   # all secchi data, all dates
   all_dat <- merge(data.frame(secc), 
@@ -698,3 +717,4 @@ secc_doc <- function(secc_dat, sgpts_shp, seg_shp, radius = 0.2, seg_pts_yr, tra
 fmt <- function(){
   function(x) format(x,nsmall = 2,scientific = FALSE)
 }
+

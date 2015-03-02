@@ -63,7 +63,7 @@ secc <- rbind(secc1, secc2, secc3)
 names(secc)[1] <- 'Station_ID'
 
 # merge secchi with lat/long stations info
-stat <- stat[, c('Station_ID', 'Latitude', 'Longitude')]
+stat <- iwr40_Stations[, c('Station_ID', 'Latitude', 'Longitude')]
 dat <- merge(secc, stat, by = 'Station_ID', all.x = T)
 
 # retain relevant columns
