@@ -219,9 +219,11 @@ for(i in to_load)
 save(shps, file = 'data/shps.RData')
 save(shps, file = 'M:/docs/manuscripts/sgdepth_manu/data/shps.RData')
 
-
 ######
 # processing satellite derived water clarity for TB
+  
+library(magrittr) 
+  
 files <- list.files('data/satellite/', full.names = TRUE)
 
 # get files
@@ -253,8 +255,12 @@ sats <- data.frame(sats)
 names(sats) <- gsub('^X', 'clarity_', names(sats))
 names(sats) <- gsub('_clarity$', '', names(sats))
 
-tb_sats <- sats
-save(tb_sats, file = 'data/tb_sats.RData')
+# clarity only, remove 2011, 2012 
+locs <- sats[, grepl('lat|lon', names(sats))]
+sats <- sats[, !grepl('lat|lon|2011$|2012$', names(sats))]
+sats_ave <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
+
+sats_ave <- data.frame(lon = locs$lon, lat = locs$lat, sats_ave)
 
 # sats_melt <- reshape2::melt(sats, id.var = c('lat', 'lon'))
 # 
@@ -271,8 +277,8 @@ save(tb_sats, file = 'data/tb_sats.RData')
 #   scale_x_continuous(expand = c(0,0)) + 
 #   scale_y_continuous(expand = c(0,0))
 # 
-# # individuals
-# ggplot(sats, aes(x = lon, y = lat, colour = clarity_2003, fill = clarity_2003)) +
+# # all years, averaged
+# ggplot(sats_ave, aes(x = lon, y = lat, colour = sats_ave, fill = sats_ave)) +
 #   geom_tile() + 
 #   coord_equal() +
 #   scale_colour_gradientn(colours = rev(brewer.pal(11, 'Spectral'))) +
@@ -281,4 +287,20 @@ save(tb_sats, file = 'data/tb_sats.RData')
 #   scale_y_continuous(expand = c(0,0)) +
 #   theme_bw()
 
+##
+# conver to raster
+library(raster)
+library(maptools)
 
+sp::coordinates(sats_ave) <- c('lon', 'lat')
+
+# set up raster template
+rast <- raster()
+extent(rast) <- extent(sats_ave)
+ncol(rast) <- length(unique(sats_ave$lon))
+nrow(rast) <-length(unique(sats_ave$lat))
+
+sat_rast <- rasterize(sats_ave, rast, sats_ave$sats_ave, fun = mean) 
+
+tb_sats_rast <- sat_rast
+save(tb_sats_rast, file = 'data/tb_sats_rast.RData')
