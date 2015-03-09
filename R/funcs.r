@@ -608,20 +608,24 @@ sens.doc <- function(doc_in, level = 0.95, nsim = 10000, trace = T, remzero = T,
 ######
 #' Get seagrass depth of colonization estimates at secchi locations
 #' 
-#' Get seagrass depth of colonization estimates at secchi locations using IWR database records, seagrass depth points, and segment polygon data
+#' Get seagrass depth of colonization estimates at secchi locations using IWR database records, seagrass depth points, and segment polygon data.  Light requirements are also returned.
 #'
 #' @param secc_dat SpatialPointsDataFrame of secchi data, can be from any location 
 #' @param sgpts_shp SpatialPointsDataFrame of seagrass depth points to sample
-#' @param seg_shp SpatialPlygonsDataFrame of segment polygon data
+#' @param seg_shp SpatialPlygonsDataFrame of segment polygon data, must column named as `segment' indicating the corresponding water body id for eahc segment
+#' @param kz numeric value indicating conversion factor for the product of secchi depth and light extinction coefficient
 #' @param radius sampling radius for estimating seagrass depth of colonization in decimal degress
 #' @param seg_pts_yr numeric indicating year of seagrass coverage data
 #' @param trace logical indicating if progress is returned to console
 #' 
-#' @return A four-element list where the first is a SpatialPolygonsDataFrame of the segment, the second is a data frame of all dates of all secchi data for the segment and the spatially-referenced depth of colonization estimate, the third is a summarized version of the second element for all unique locations with secchi data averaged across dates, and the third is depth of colonization data matched to the nearest date of the secchi data for the seagrass coverage. 
-secc_doc <- function(secc_dat, sgpts_shp, seg_shp, radius = 0.2, seg_pts_yr, trace = F){
+#' @import dplyr
+#' 
+#' @return A four-element list where the first is a SpatialPolygonsDataFrame of the segment, the second is a data frame of all dates of all secchi data for the segment and the spatially-referenced depth of colonization estimate, the third is a summarized version of the second element for all unique locations with secchi data averaged across dates, and the third is depth of colonization data matched to the nearest date of the secchi data for the seagrass coverage.  The third and fourth elements include light requirements and segment names for each location.  
+secc_doc <- function(secc_dat, sgpts_shp, seg_shp, kz = 1.7, radius = 0.2, seg_pts_yr, trace = F){
     
   if('character' %in% class(seg_pts_yr)) seg_pts_yr <- as.numeric(seg_pts_yr)
   if('factor' %in% class(seg_pts_yr)) stop('seg_pts_yr cannot be a factor')
+  if(!'seg' %in% names(seg_shp)) stop('seg_shp input does not have seg column')
   
   # clip secchi by seg
   # clip secchi data by segments
@@ -698,12 +702,41 @@ secc_doc <- function(secc_dat, sgpts_shp, seg_shp, radius = 0.2, seg_pts_yr, tra
   names(ave_secc)[names(ave_secc) %in% 'V1'] <- 'SD'
   ave_dat <- merge(data.frame(ave_secc), maxd, by = c('Station_ID'))
 
+  # get light requirements for ave dat and near dat
+  ave_dat <- mutate(ave_dat, 
+    light = 100 * exp(-z_cmax_all * kz/SD),
+    seg = NA
+    )
+  near_dat <- mutate(near_dat, 
+    light = 100 * exp(-z_cmax_all * kz/SD),
+    seg = NA
+    )
+
+  # convert ave dat and near dat to spatialpointsdataframe
+  coords <- ave_dat[, c('Longitude', 'Latitude')]
+  ave_dat <- ave_dat[, !names(ave_dat) %in% c('Longitude', 'Latitude')]
+  coordinates(ave_dat) <- coords
+  coords <- near_dat[, c('Longitude', 'Latitude')]
+  near_dat <- near_dat[, !names(near_dat) %in% c('Longitude', 'Latitude')]
+  coordinates(near_dat) <- coords
+  
+  # get segment locations for each station
+  for(seg in as.character(seg_shp$seg)){
+    
+    to_sel <- seg_shp[seg_shp$seg %in% seg, ]
+    ave_sel <- !is.na(ave_dat %over% to_sel)[, 1]
+    near_sel <- !is.na(near_dat %over% to_sel)[, 1]
+    ave_dat[ave_sel, 'seg'] <- as.character(seg)
+    near_dat[near_sel, 'seg'] <- as.character(seg)
+    
+  }
+    
   # output, all data and averaged secchi data
   out <- list(
     seg_shp = seg_shp,
     all_dat = all_dat, 
-    ave_dat = ave_dat,
-    near_dat = near_dat
+    ave_dat = data.frame(ave_dat, stringsAsFactors = F),
+    near_dat = data.frame(near_dat, stringsAsFactors = F)
   )
   
   if(trace) cat('\n')
@@ -715,6 +748,5 @@ secc_doc <- function(secc_dat, sgpts_shp, seg_shp, radius = 0.2, seg_pts_yr, tra
 ######
 # formet of label precision in ggplot axes
 fmt <- function(){
-  function(x) format(x,nsmall = 2,scientific = FALSE)
+    function(x) format(x,nsmall = 2,scientific = FALSE)
 }
-

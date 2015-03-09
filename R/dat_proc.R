@@ -220,6 +220,65 @@ save(shps, file = 'data/shps.RData')
 save(shps, file = 'M:/docs/manuscripts/sgdepth_manu/data/shps.RData')
 
 
+######
+# processing satellite derived water clarity for TB
+files <- list.files('data/satellite/', full.names = TRUE)
 
+# get files
+sats <- vector('list', length = length(files))
+names(sats) <- files
+for(fl in files){
+  
+  cat(fl, '\n')
+  
+  # import 
+  tmp <- readLines(fl) %>% 
+    strsplit(' .') %>% 
+    unlist
+  tmp <- tmp[nchar(tmp) > 0] %>% 
+    as.numeric
+  
+  # remove outliers
+  if(!grepl('lat|lon', fl)) tmp[tmp > 4] <- NA
+  
+  sats[[fl]] <- tmp
+  
+}
+names(sats) <- gsub('\\.txt$', '', basename(names(sats)))
+sats[['lat']] <- rev(sats[['lat']])
+sats[['lon']] <- -1 * sats[['lon']]
+
+sats <- do.call('cbind', sats)
+sats <- data.frame(sats)
+names(sats) <- gsub('^X', 'clarity_', names(sats))
+names(sats) <- gsub('_clarity$', '', names(sats))
+
+tb_sats <- sats
+save(tb_sats, file = 'data/tb_sats.RData')
+
+# sats_melt <- reshape2::melt(sats, id.var = c('lat', 'lon'))
+# 
+# library(ggplot2)
+# library(RColorBrewer)
+# 
+# # all
+# ggplot(sats_melt, aes(x = lon, y = lat, fill = value, colour = value)) +
+#   facet_wrap(~ variable) + 
+#   geom_tile() + 
+#   coord_equal() +
+#   scale_fill_gradientn(colours = rev(brewer.pal(11, 'Spectral'))) +
+#   scale_colour_gradientn(colours = rev(brewer.pal(11, 'Spectral'))) +
+#   scale_x_continuous(expand = c(0,0)) + 
+#   scale_y_continuous(expand = c(0,0))
+# 
+# # individuals
+# ggplot(sats, aes(x = lon, y = lat, colour = clarity_2003, fill = clarity_2003)) +
+#   geom_tile() + 
+#   coord_equal() +
+#   scale_colour_gradientn(colours = rev(brewer.pal(11, 'Spectral'))) +
+#   scale_fill_gradientn(colours = rev(brewer.pal(11, 'Spectral'))) +
+#   scale_x_continuous(expand = c(0,0)) + 
+#   scale_y_continuous(expand = c(0,0)) +
+#   theme_bw()
 
 
