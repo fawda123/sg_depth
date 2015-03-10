@@ -258,37 +258,12 @@ names(sats) <- gsub('_clarity$', '', names(sats))
 # clarity only, remove 2011, 2012 
 locs <- sats[, grepl('lat|lon', names(sats))]
 sats <- sats[, !grepl('lat|lon|2011$|2012$', names(sats))]
-sats_ave <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
+sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
 
-sats_ave <- data.frame(lon = locs$lon, lat = locs$lat, sats_ave)
-
-# sats_melt <- reshape2::melt(sats, id.var = c('lat', 'lon'))
-# 
-# library(ggplot2)
-# library(RColorBrewer)
-# 
-# # all
-# ggplot(sats_melt, aes(x = lon, y = lat, fill = value, colour = value)) +
-#   facet_wrap(~ variable) + 
-#   geom_tile() + 
-#   coord_equal() +
-#   scale_fill_gradientn(colours = rev(brewer.pal(11, 'Spectral'))) +
-#   scale_colour_gradientn(colours = rev(brewer.pal(11, 'Spectral'))) +
-#   scale_x_continuous(expand = c(0,0)) + 
-#   scale_y_continuous(expand = c(0,0))
-# 
-# # all years, averaged
-# ggplot(sats_ave, aes(x = lon, y = lat, colour = sats_ave, fill = sats_ave)) +
-#   geom_tile() + 
-#   coord_equal() +
-#   scale_colour_gradientn(colours = rev(brewer.pal(11, 'Spectral'))) +
-#   scale_fill_gradientn(colours = rev(brewer.pal(11, 'Spectral'))) +
-#   scale_x_continuous(expand = c(0,0)) + 
-#   scale_y_continuous(expand = c(0,0)) +
-#   theme_bw()
+sats_all <- data.frame(lon = locs$lon, lat = locs$lat, clarity_ave = sats_all, sats)
 
 ##
-# conver to raster
+# convert to raster
 library(raster)
 library(maptools)
 
@@ -302,5 +277,5 @@ nrow(rast) <-length(unique(sats_ave$lat))
 
 sat_rast <- rasterize(sats_ave, rast, sats_ave$sats_ave, fun = mean) 
 
-tb_sats_rast <- sat_rast
-save(tb_sats_rast, file = 'data/tb_sats_rast.RData')
+tb_sats <- list(ave_rast = sat_rast, sats_all = sats_all)
+save(tb_sats, file = 'data/tb_sats.RData')
