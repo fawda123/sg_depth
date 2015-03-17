@@ -209,6 +209,37 @@ save(sgpts_2009_irl, file = 'data/sgpts_2009_irl.RData')
 save(sgpts_2009_irl, file = 'M:/docs/manuscripts/sgdepth_manu/data/sgpts_2009_irl.RData')
 
 ######
+# format choc bay seagrass points for bay
+# used in manuscript
+
+# load original file
+raw <- foreign::read.dbf('M:/GIS/seagrass/sgpts_2007_choc.dbf')
+
+x <- raw[, c('lat', 'lon', 'depth', 'SEAGRASS')]
+
+# rename depth, seagrass columns, specific to each file
+names(x)
+names(x) <- c('lat', 'lon', 'Depth', 'Seagrass')
+
+# depth as positive, floor to zero
+x$Depth <- pmax(0, -1 * x$Depth)
+
+# convert seagrass values to 'Continuous', 'Discontinuous'
+newlevs <- c('Continuous', 'Discontinuous', 'Discontinuous', 'Discontinuous', 'Discontinuous')
+levels(x$Seagrass) <- newlevs
+
+# convert to spatialpointsdataframe
+coords <- x[, c('lon', 'lat')]
+names(coords) <- c('coords.x1', 'coords.x2')
+x <- x[, c('Depth', 'Seagrass')]
+x <- SpatialPointsDataFrame(coords, x)
+
+sgpts_2007_choc <- x
+
+save(sgpts_2007_choc, file = 'data/sgpts_2009_choc.RData')
+save(sgpts_2007_choc, file = 'M:/docs/manuscripts/sgdepth_manu/data/sgpts_2007_choc.RData')
+
+######
 # save all shapefiles to RData for quicker load
 # used in shiny
 to_load <- c('seg_303.shp', 'seg_820.shp', 'seg_902.shp', 'seg_1502.shp', 'sgpts_2007_303.shp', 'sgpts_2006_820.shp', 'sgpts_2010_902.shp', 'sgpts_2009_1502.shp')
@@ -240,8 +271,13 @@ for(fl in files){
   tmp <- tmp[nchar(tmp) > 0] %>% 
     as.numeric
   
-  # remove outliers
-  if(!grepl('lat|lon', fl)) tmp[tmp > 4] <- NA
+  # remove outliers, zero values
+  # values <= 0.1934429 are secchi values >= 4m
+  if(!grepl('lat|lon', fl)){
+    tmp[tmp <= 0.1934429] <- NA
+    tmp[tmp > quantile(tmp, 0.95, na.rm = T)] <- NA
+    tmp[tmp == 0] <- NA
+  }
   
   sats[[fl]] <- tmp
   
@@ -284,7 +320,7 @@ save(tb_sats, file = 'data/tb_sats.RData')
 # then copy to manuscript data folder
 
 ######
-# processing satellite derived water clarity (kz) for Tampa Bay
+# processing satellite derived water clarity (kz) for Choctawhatchee Bay
   
 library(magrittr) 
   
@@ -304,8 +340,13 @@ for(fl in files){
   tmp <- tmp[nchar(tmp) > 0] %>% 
     as.numeric
   
-  # remove outliers
-  if(!grepl('lat|lon', fl)) tmp[tmp > 4] <- NA
+  # remove outliers, zero values
+  # values <= 0.1934429 are secchi values >= 4m
+  if(!grepl('lat|lon', fl)){
+    tmp[tmp <= 0.1934429] <- NA
+    tmp[tmp > quantile(tmp, 0.95, na.rm = T)] <- NA
+    tmp[tmp == 0] <- NA
+  }
   
   sats[[fl]] <- tmp
   
@@ -317,9 +358,9 @@ sats[['lon']] <- -1 * sats[['lon']]
 sats <- do.call('cbind', sats)
 sats <- data.frame(sats)
 names(sats) <- gsub('^X', 'kz_', names(sats))
-names(sats) <- gsub('_kd$', '', names(sats))
+names(sats) <- gsub('_kd_cbay$', '', names(sats))
 
-# kd only, remove 2011, 2012 
+# kd only, remove 2007-2013
 locs <- sats[, grepl('lat|lon', names(sats))]
 sats <- sats[, !grepl('lat|lon|2008$|2009$|2010$|2011$|2012$|2013$', names(sats))]
 sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
@@ -339,7 +380,7 @@ sp::coordinates(sats_ave) <- c('lon', 'lat')
 rast <- raster()
 extent(rast) <- extent(sats_ave)
 ncol(rast) <- length(unique(sats_ave$lon))
-nrow(rast) <-length(unique(sats_ave$lat))
+nrow(rast) <- length(unique(sats_ave$lat))
 
 sat_rast <- rasterize(sats_ave, rast, sats_ave$kz_ave, fun = mean) 
 
