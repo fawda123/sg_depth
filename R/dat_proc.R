@@ -220,11 +220,11 @@ save(shps, file = 'data/shps.RData')
 save(shps, file = 'M:/docs/manuscripts/sgdepth_manu/data/shps.RData')
 
 ######
-# processing satellite derived water clarity for TB
+# processing satellite derived water clarity (kz) for Tampa Bay
   
 library(magrittr) 
   
-files <- list.files('data/satellite/', full.names = TRUE)
+files <- list.files('data/satellite/Tampa_Bay/', full.names = TRUE)
 
 # get files
 sats <- vector('list', length = length(files))
@@ -252,20 +252,22 @@ sats[['lon']] <- -1 * sats[['lon']]
 
 sats <- do.call('cbind', sats)
 sats <- data.frame(sats)
-names(sats) <- gsub('^X', 'clarity_', names(sats))
-names(sats) <- gsub('_clarity$', '', names(sats))
+names(sats) <- gsub('^X', 'kz_', names(sats))
+names(sats) <- gsub('_kd$', '', names(sats))
 
-# clarity only, remove 2011, 2012 
+# kd only, remove 2011, 2012 
 locs <- sats[, grepl('lat|lon', names(sats))]
 sats <- sats[, !grepl('lat|lon|2011$|2012$', names(sats))]
 sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
 
-sats_all <- data.frame(lon = locs$lon, lat = locs$lat, clarity_ave = sats_all, sats)
+sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kz_ave = sats_all, sats)
 
 ##
 # convert to raster
 library(raster)
 library(maptools)
+
+sats_ave <- sats_all[, c('lon', 'lat', 'kz_ave')]
 
 sp::coordinates(sats_ave) <- c('lon', 'lat')
 
@@ -275,7 +277,72 @@ extent(rast) <- extent(sats_ave)
 ncol(rast) <- length(unique(sats_ave$lon))
 nrow(rast) <-length(unique(sats_ave$lat))
 
-sat_rast <- rasterize(sats_ave, rast, sats_ave$sats_ave, fun = mean) 
+sat_rast <- rasterize(sats_ave, rast, sats_ave$kz_ave, fun = mean) 
 
 tb_sats <- list(ave_rast = sat_rast, sats_all = sats_all)
 save(tb_sats, file = 'data/tb_sats.RData')
+# then copy to manuscript data folder
+
+######
+# processing satellite derived water clarity (kz) for Tampa Bay
+  
+library(magrittr) 
+  
+files <- list.files('data/satellite/Choctawhatchee_Bay/', full.names = TRUE)
+
+# get files
+sats <- vector('list', length = length(files))
+names(sats) <- files
+for(fl in files){
+  
+  cat(fl, '\n')
+  
+  # import 
+  tmp <- readLines(fl) %>% 
+    strsplit(' .') %>% 
+    unlist
+  tmp <- tmp[nchar(tmp) > 0] %>% 
+    as.numeric
+  
+  # remove outliers
+  if(!grepl('lat|lon', fl)) tmp[tmp > 4] <- NA
+  
+  sats[[fl]] <- tmp
+  
+}
+names(sats) <- gsub('\\.txt$', '', basename(names(sats)))
+sats[['lat']] <- rev(sats[['lat']])
+sats[['lon']] <- -1 * sats[['lon']]
+
+sats <- do.call('cbind', sats)
+sats <- data.frame(sats)
+names(sats) <- gsub('^X', 'kz_', names(sats))
+names(sats) <- gsub('_kd$', '', names(sats))
+
+# kd only, remove 2011, 2012 
+locs <- sats[, grepl('lat|lon', names(sats))]
+sats <- sats[, !grepl('lat|lon|2008$|2009$|2010$|2011$|2012$', names(sats))]
+sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
+
+sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kz_ave = sats_all, sats)
+
+##
+# convert to raster
+library(raster)
+library(maptools)
+
+sats_ave <- sats_all[, c('lon', 'lat', 'kz_ave')]
+
+sp::coordinates(sats_ave) <- c('lon', 'lat')
+
+# set up raster template
+rast <- raster()
+extent(rast) <- extent(sats_ave)
+ncol(rast) <- length(unique(sats_ave$lon))
+nrow(rast) <-length(unique(sats_ave$lat))
+
+sat_rast <- rasterize(sats_ave, rast, sats_ave$kz_ave, fun = mean) 
+
+cb_sats <- list(ave_rast = sat_rast, sats_all = sats_all)
+save(cb_sats, file = 'data/cb_sats.RData')
+# then copy to manuscript data folder
