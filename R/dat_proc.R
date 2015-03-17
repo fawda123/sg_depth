@@ -257,7 +257,7 @@ names(sats) <- gsub('_kd$', '', names(sats))
 
 # kd only, remove 2011, 2012 
 locs <- sats[, grepl('lat|lon', names(sats))]
-sats <- sats[, !grepl('lat|lon|2011$|2012$', names(sats))]
+sats <- sats[, !grepl('lat|lon|2011$|2012$|2013$', names(sats))]
 sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
 
 sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kz_ave = sats_all, sats)
@@ -321,7 +321,7 @@ names(sats) <- gsub('_kd$', '', names(sats))
 
 # kd only, remove 2011, 2012 
 locs <- sats[, grepl('lat|lon', names(sats))]
-sats <- sats[, !grepl('lat|lon|2008$|2009$|2010$|2011$|2012$', names(sats))]
+sats <- sats[, !grepl('lat|lon|2008$|2009$|2010$|2011$|2012$|2013$', names(sats))]
 sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
 
 sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kz_ave = sats_all, sats)
