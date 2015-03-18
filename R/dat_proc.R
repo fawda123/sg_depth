@@ -291,9 +291,9 @@ sats <- data.frame(sats)
 names(sats) <- gsub('^X', 'kz_', names(sats))
 names(sats) <- gsub('_kd$', '', names(sats))
 
-# kd only, remove 2011, 2012 
+# kd only, remove non-relevant years
 locs <- sats[, grepl('lat|lon', names(sats))]
-sats <- sats[, !grepl('lat|lon|2011$|2012$|2013$', names(sats))]
+sats <- sats[, !grepl('lat|lon|2003$|2004$|2005$|2011$|2012$|2013$', names(sats))]
 sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
 
 sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kz_ave = sats_all, sats)
@@ -317,7 +317,7 @@ sat_rast <- rasterize(sats_ave, rast, sats_ave$kz_ave, fun = mean)
 
 tb_sats <- list(ave_rast = sat_rast, sats_all = sats_all)
 save(tb_sats, file = 'data/tb_sats.RData')
-# then copy to manuscript data folder
+save(tb_sats, file = 'M:/docs/manuscripts/sgdepth_manu/data/tb_sats.RData')
 
 ######
 # processing satellite derived water clarity (kz) for Choctawhatchee Bay
@@ -367,6 +367,14 @@ sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
 
 sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kz_ave = sats_all, sats)
 
+# clip choc raster by segments
+data(choc_seg)
+
+coordinates(sats_all) <- c('lon', 'lat')
+
+sel <- !is.na(sats_all %over% choc_seg)
+sats_all <- data.frame(sats_all[c(sel), ])
+
 ##
 # convert to raster
 library(raster)
@@ -386,4 +394,5 @@ sat_rast <- rasterize(sats_ave, rast, sats_ave$kz_ave, fun = mean)
 
 cb_sats <- list(ave_rast = sat_rast, sats_all = sats_all)
 save(cb_sats, file = 'data/cb_sats.RData')
-# then copy to manuscript data folder
+save(cb_sats, file = 'M:/docs/manuscripts/sgdepth_manu/data/cb_sats.RData')
+
