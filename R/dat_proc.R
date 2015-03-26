@@ -251,11 +251,11 @@ save(shps, file = 'data/shps.RData')
 save(shps, file = 'M:/docs/manuscripts/sgdepth_manu/data/shps.RData')
 
 ######
-# processing satellite derived water clarity (kz) for Tampa Bay
+# processing satellite derived water clarity (clarity, not kd) for Tampa Bay
   
 library(magrittr) 
   
-files <- list.files('data/satellite/Tampa_Bay/', full.names = TRUE)
+files <- list.files('data/satellite/Tampa_Bay', '_clarity\\.txt$|lat|lon', full.names = TRUE)
 
 # get files
 sats <- vector('list', length = length(files))
@@ -271,13 +271,8 @@ for(fl in files){
   tmp <- tmp[nchar(tmp) > 0] %>% 
     as.numeric
   
-  # remove outliers, zero values
-  # values <= 0.1934429 are secchi values >= 4m
-  if(!grepl('lat|lon', fl)){
-    tmp[tmp <= 0.1934429] <- NA
-    tmp[tmp > quantile(tmp, 0.95, na.rm = T)] <- NA
-    tmp[tmp == 0] <- NA
-  }
+  # remove outliers
+  if(!grepl('lat|lon', fl)) tmp[tmp > 4] <- NA
   
   sats[[fl]] <- tmp
   
@@ -288,22 +283,22 @@ sats[['lon']] <- -1 * sats[['lon']]
 
 sats <- do.call('cbind', sats)
 sats <- data.frame(sats)
-names(sats) <- gsub('^X', 'kz_', names(sats))
-names(sats) <- gsub('_kd$', '', names(sats))
+names(sats) <- gsub('^X', 'clarity_', names(sats))
+names(sats) <- gsub('_clarity$', '', names(sats))
 
-# kd only, remove non-relevant years
+# clarity only, remove 2011, 2012, 2013
 locs <- sats[, grepl('lat|lon', names(sats))]
 sats <- sats[, !grepl('lat|lon|2003$|2004$|2005$|2011$|2012$|2013$', names(sats))]
 sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
 
-sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kz_ave = sats_all, sats)
+sats_all <- data.frame(lon = locs$lon, lat = locs$lat, clarity_ave = sats_all, sats)
 
 ##
-# convert to raster
+# conver to raster
 library(raster)
 library(maptools)
 
-sats_ave <- sats_all[, c('lon', 'lat', 'kz_ave')]
+sats_ave <- sats_all[, c('lon', 'lat', 'clarity_ave')]
 
 sp::coordinates(sats_ave) <- c('lon', 'lat')
 
@@ -313,10 +308,10 @@ extent(rast) <- extent(sats_ave)
 ncol(rast) <- length(unique(sats_ave$lon))
 nrow(rast) <-length(unique(sats_ave$lat))
 
-sat_rast <- rasterize(sats_ave, rast, sats_ave$kz_ave, fun = mean) 
+sat_rast <- rasterize(sats_ave, rast, sats_ave$clarity_ave, fun = mean) 
 
 tb_sats <- list(ave_rast = sat_rast, sats_all = sats_all)
-save(tb_sats, file = 'data/tb_sats.RData')
+save(tb_sats, file = 'data/tb_sats_rast.RData')
 save(tb_sats, file = 'M:/docs/manuscripts/sgdepth_manu/data/tb_sats.RData')
 
 ######
