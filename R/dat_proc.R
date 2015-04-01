@@ -315,7 +315,7 @@ save(tb_sats, file = 'data/tb_sats_rast.RData')
 save(tb_sats, file = 'M:/docs/manuscripts/sgdepth_manu/data/tb_sats.RData')
 
 ######
-# processing satellite derived water clarity (kz) for Choctawhatchee Bay
+# processing satellite derived water clarity (kd) for Choctawhatchee Bay
   
 library(magrittr) 
   
@@ -385,9 +385,9 @@ extent(rast) <- extent(sats_ave)
 ncol(rast) <- length(unique(sats_ave$lon))
 nrow(rast) <- length(unique(sats_ave$lat))
 
-sat_rast <- rasterize(sats_ave, rast, sats_ave$kz_ave, fun = mean) 
+sat_rast <- rasterize(sats_ave, rast, sats_ave$kz_ave, fun = mean)  
 
-cb_sats <- list(ave_rast = sat_rast, sats_all = sats_all)
-save(cb_sats, file = 'data/cb_sats.RData')
-save(cb_sats, file = 'M:/docs/manuscripts/sgdepth_manu/data/cb_sats.RData')
+choc_sats <- list(ave_rast = sat_rast, sats_all = sats_all)
+save(choc_sats, file = 'data/choc_sats.RData')
+save(choc_sats, file = 'M:/docs/manuscripts/sgdepth_manu/data/choc_sats.RData')
 
