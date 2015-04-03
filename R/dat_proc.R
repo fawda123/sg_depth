@@ -367,9 +367,9 @@ coordinates(sats) <- c('lon', 'lat')
 sel <- !is.na(sats %over% choc_seg)
 sats <- data.frame(sats[c(sel), ])
 
-# create a new column that is the average kd across all years
+# create a new column that is the average kd only for 2003-2007 (sg data is for 2007)
 locs <- sats[, grepl('lat|lon', names(sats))]
-sats <- sats[, !grepl('lat|lon', names(sats))]
+sats <- sats[, !grepl('lat|lon|2008$|2009$|2010$|2011$|2012$|2013$', names(sats))]
 sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
 sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kd_ave = sats_all, sats)
 
@@ -482,9 +482,10 @@ crc <- apply(
 sats_all[, to_crct] <- crc
 
 # replace old kd_ave with new from corrected data
+# only 2003 to 2007 data (seagrass is 2007)
 sats <- sats_all
 locs <- sats[, grepl('lat|lon', names(sats))]
-sats <- sats[, !grepl('lat|lon', names(sats))]
+sats <- sats[, !grepl('lat|lon|2008$|2009$|2010$|2011$|2012$|2013$', names(sats))]
 sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
 sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kd_ave = sats_all, sats)
 
