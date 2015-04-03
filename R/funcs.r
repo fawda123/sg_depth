@@ -750,3 +750,142 @@ secc_doc <- function(secc_dat, sgpts_shp, seg_shp, kz = 1.7, radius = 0.2, seg_p
 fmt <- function(){
     function(x) format(x,nsmall = 2,scientific = FALSE)
 }
+
+######
+#' Convert a data frame to raster
+#'
+#' @param dat_in data.frame to conver to raster, must include lon, lat columns named accordingly
+#' @param fill_col chr string of column of dat_in to fill the raster
+#' 
+make_rast_fun <- function(dat_in, fill_col){
+  
+  coordinates(dat_in) <- c('lon', 'lat')
+
+  rast <- raster()
+  extent(rast) <- extent(dat_in)
+  ncol(rast) <- length(unique(dat_in$lon))
+  nrow(rast) <- length(unique(dat_in$lat))
+
+  out <- rasterize(dat_in, rast, data.frame(dat_in[, fill_col]), fun = mean)  
+  
+  return(out)
+  
+}
+
+######
+#' Estimate cumulative distribution curves for in situ and satellite estimated kd values using logistic regression
+#' 
+#' @param dat_in data.frame with in situ and satellite measured kd values, including cumulutive sums of each vector that are scaled by the maximum.  The data.frame is ordered based on the ascending values of in situ kd
+#' @param xsitu chr string of column name for in situ kd values
+#' @param ysitu chr string of column name of cumulative sum of satellite kd values
+#' @param xsats chr string of column for satellite kd values
+#' @parma ysats chr string of column name for cumulative sum of satellite kd values
+#' 
+#' @return A list with two regresion object, the first is the regression for the in situe curve and the second is the regression for the satellite estimated curve
+kd_binomod <- function(dat_in, xsitu, ysitu, xsats, ysats){
+  
+  # format data for glm, needs column of denominators for each prop
+  to_mod <- data.frame(dat_in) %>% 
+    mutate(
+      totsitu = max(dat_in[ysitu]),
+      totsats = max(dat_in[ysats])
+    )
+
+  # create the models
+  form_in1 <- substitute(cbind(y, totsitu - y) ~ x, 
+    list(y = as.name(ysitu), x = as.name(xsitu)))
+  form_in2 <- substitute(cbind(y, totsats - y) ~ x, 
+    list(y = as.name(ysats), x = as.name(xsats)))
+  mod1 <- suppressWarnings( # non integers
+    glm(form_in1, family = binomial(logit), data = to_mod)
+  )
+  mod2 <- suppressWarnings( # non integers
+    glm(form_in2, family = binomial(logit), data = to_mod)
+  )
+  
+  # return output
+  mods <- list(mod1, mod2)
+  return(mods)
+  
+}
+
+######
+#' Use the output of kd_binomod to get corrected kd values
+#'
+#' @param mods_in list of models returned from kd_binomod
+#' @param dat_in data.frame that was used as input to kd_binomod
+#' @param xsat numeric vector of satellite kd values to correct
+#' @param xrng numeric vector of range of x values for the plot
+#' @param steps numeric vector of number of values for creating the logistic curve in the plot
+#' @param plot logical to return a plot, otherwise the corrected values are returned
+#' @param xsitu character string of column name of in situ kd values in dat_in
+#' @param xsats character string of column name of satellite kd values in dat_in
+#' @param ysitu character string of column name of cumulative in situ kd values in dat_in
+#' @param ysats character string of column name of cumulative satellite kd values in dat_in
+#'
+#' @return Vector of corrected kd values if \code{plot = FALSE}, otherwise a plot showing the empirical data used to estimate each model and a pathway showing the corrected satellite data.
+#'
+kd_backsat <- function(mods_in, dat_in, xsat, xrng = c(0, 2), steps = 2000,
+  plot = FALSE, xsitu = 'kPAR', xsats = 'layer', ysitu = 'cumkPAR', 
+  ysats = 'cumlayer'){
+  
+  # get corrected kd from satellite kd
+  preddat <- data.frame(xsat)
+  names(preddat) <- xsats
+  yback <- predict(mods_in[[2]], newdata = preddat, type = 'response')
+  coefs <- coefficients(mods_in[[1]])
+  xback <- (log(yback/(1 - yback)) - coefs[1])/coefs[2]
+  
+  if(plot){
+    
+    # get predictions for plotting
+    xvals <- seq(xrng[1], xrng[2], length = steps)
+    xvals <- data.frame(xvals)
+    names(xvals) <- xsitu
+    ysitu_lns <- predict(mods_in[[1]], newdata = xvals, type = 'response')
+    names(xvals) <- xsats
+    ysats_lns <- predict(mods_in[[2]], newdata = xvals, type = 'response')
+    bilines <- data.frame(xvals, ysitu_lns, ysats_lns)
+    names(bilines) <- c('xvals', 'ysitu_lns', 'ysats_lns')
+    
+    # data for back transformation path
+    xs <- rbind(xsat, xback)
+    xs <- c(apply(xs, 2, function(x) c(x[1], x[1], x[2], x[2])))
+    ys <- c(apply(matrix(yback), 1, function(x) c(0, x, x, 0)))
+    backdat <- data.frame(
+      x = xs,
+      y = ys, 
+      group = rep(seq(1, length(yback)), each = 4)
+    )
+    
+    # rename raw variables
+    p_nms <- c('xpt1', 'ypt1', 'xpt2', 'ypt2')
+    names(dat_in)[names(dat_in) %in% c(xsitu, ysitu, xsats, ysats)] <- p_nms
+    
+    p <- ggplot(dat_in, aes(x = xpt1, y = ypt1, colour = 'In Situ')) + 
+      geom_point() +
+      geom_point(aes(x = xpt2, y = ypt2, colour = 'Satellite')) + 
+      geom_line(data = bilines, aes(x = xvals, y = ysitu_lns, 
+        colour = 'In Situ')) + 
+      geom_line(data = bilines, aes(x = xvals, y = ysats_lns,
+        colour = 'Satellite')) +
+      geom_path(data = backdat, aes(x = x, y = y, group = group, colour = group), 
+        colour = 'black') +
+      geom_point(dat = backdat, aes(x = x, y = y, group = group, colour = group), 
+        colour = 'black', pch = 16, size = 4) +
+      scale_x_continuous(name = expression(italic(K [d]))) + 
+      scale_y_continuous(name = expression(paste('Cumulative ', italic(K [d])))) +
+      theme_classic() + 
+      theme(legend.title = element_blank(), 
+        legend.position = c(0, 1), legend.justification = c(0, 1),
+        text = element_text(size=20))
+    
+    return(p)
+    
+    }
+  
+  return(xback)
+   
+}
+
+

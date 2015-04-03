@@ -316,9 +316,15 @@ save(tb_sats, file = 'M:/docs/manuscripts/sgdepth_manu/data/tb_sats.RData')
 
 ######
 # processing satellite derived water clarity (kd) for Choctawhatchee Bay
-  
+# this is different from TB because it has not been validated with in situ
+
 library(magrittr) 
-  
+library(raster)
+library(maptools)
+library(sp)
+source('R/funcs.R')
+
+# files to import w/ choc kd values
 files <- list.files('data/satellite/Choctawhatchee_Bay/', full.names = TRUE)
 
 # get files
@@ -336,10 +342,9 @@ for(fl in files){
     as.numeric
   
   # remove outliers, zero values
-  # values <= 0.1934429 are secchi values >= 4m
+  # remove very large kd values
   if(!grepl('lat|lon', fl)){
-    tmp[tmp <= 0.1934429] <- NA
-    tmp[tmp > quantile(tmp, 0.95, na.rm = T)] <- NA
+    tmp[tmp > 2] <- NA
     tmp[tmp == 0] <- NA
   }
   
@@ -350,44 +355,146 @@ names(sats) <- gsub('\\.txt$', '', basename(names(sats)))
 sats[['lat']] <- rev(sats[['lat']])
 sats[['lon']] <- -1 * sats[['lon']]
 
+# organize results into a data frame
 sats <- do.call('cbind', sats)
 sats <- data.frame(sats)
-names(sats) <- gsub('^X', 'kz_', names(sats))
+names(sats) <- gsub('^X', 'kd_', names(sats))
 names(sats) <- gsub('_kd_cbay$', '', names(sats))
 
-# kd only, remove 2007-2013
-locs <- sats[, grepl('lat|lon', names(sats))]
-sats <- sats[, !grepl('lat|lon|2008$|2009$|2010$|2011$|2012$|2013$', names(sats))]
-sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
-
-sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kz_ave = sats_all, sats)
-
-# clip choc raster by segments
+# clip the data frame by the spatial extent of choc segments
 data(choc_seg)
+coordinates(sats) <- c('lon', 'lat')
+sel <- !is.na(sats %over% choc_seg)
+sats <- data.frame(sats[c(sel), ])
 
-coordinates(sats_all) <- c('lon', 'lat')
+# create a new column that is the average kd across all years
+locs <- sats[, grepl('lat|lon', names(sats))]
+sats <- sats[, !grepl('lat|lon', names(sats))]
+sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
+sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kd_ave = sats_all, sats)
 
-sel <- !is.na(sats_all %over% choc_seg)
-sats_all <- data.frame(sats_all[c(sel), ])
+# make a raster object from the averaged data
+sats_ave <- sats_all[, c('lon', 'lat', 'kd_ave')]
+sat_rast <- make_rast_fun(sats_ave, 'kd_ave')
+
+# save the uncorrected data for comparison w/ corrected
+choc_sats_unc <- list(ave_rast = sat_rast, sats_all = sats_all)
+save(choc_sats_unc, file = 'data/choc_sats_unc.RData')
+save(choc_sats_unc, file = 'M:/docs/manuscripts/sgdepth_manu/data/choc_sats_unc.RData')
 
 ##
-# convert to raster
+# develop correction for kd using in situ data
+#
+# rm(list = ls())
+# 
+# library(dplyr)
+# library(tidyr)
+# library(raster)
+# library(sp)
+# library(ggplot2)
+#
+# ##
+# # process raw data that was exported from florida estuaries database
+# # L:\lab\FloridaEstuaries\yates\working\FL_Estuaries.mdb
+# # kpar and meta as separate files
+# # processed data saved as 'choc_situ.RData'
+#
+# kpar <- read.table('data/CTD_YSI.txt', sep = ',', header = T,
+#   stringsAsFactors = F)
+# events <- read.table('data/ch_events.txt', sep ='\t', header = T,
+#   stringsAsFactors = F)
+# 
+# # process metadata
+# # date to posix, remove exta cols, remove dups (only one), sort
+# events <- select(events, Cruise, Station, Latitude, Longitude) %>% 
+#   unique %>% 
+#   arrange(Station, Cruise)
+# 
+# # process kpar
+# # get choc sites and relevant columns
+# # format date and kpar as positive values, sort
+# kpar <- filter(kpar, grepl('^CH', Station)) %>% 
+#   select(Cruise, Station, Rundate, Depth, kPAR) %>% 
+#   na.omit %>% 
+#   mutate(
+#     Rundate = as.POSIXct(Rundate, format = '%m/%d/%Y %H:%M:%S'),
+#     kPAR = -kPAR
+#     ) %>% 
+#   filter(kPAR > 0) %>% 
+#   mutate(year = as.numeric(strftime(Rundate, '%Y'))) %>% 
+#   group_by(Cruise, Station, year) %>% 
+#   summarise(kPAR = mean(kPAR, na.rm = T)) %>% 
+#   left_join(., events, by = c('Station', 'Cruise')) %>% 
+#   filter(c(2010) %in% year) %>% # incomplete data for 2009, 2012, no kd for 2011
+#   group_by(Station, year,  Latitude, Longitude) %>% 
+#   summarise(kPAR = mean(kPAR, na.rm = T)) %>% 
+#   filter(Station != 'CH10') %>% # out of segment limits
+#   data.frame %>% 
+#   arrange(kPAR) %>% 
+#   mutate(cumkPAR = cumsum(kPAR)/max(cumsum(kPAR)))
+# choc_situ <- kpar
+# save(choc_situ, file = 'data/choc_situ.RData')
+
+##
+# sample 2010 data using choc_situ (processed kd from above) to get correction
+
+rm(list = ls())
+
+source('R/funcs.R')
+library(dplyr)
 library(raster)
-library(maptools)
+library(sp)
+library(ggplot2)
 
-sats_ave <- sats_all[, c('lon', 'lat', 'kz_ave')]
+# load data - uncorrecte satellite data and in situ kd
+data(choc_sats_unc)
+data(choc_situ)
 
-sp::coordinates(sats_ave) <- c('lon', 'lat')
+# make a raster file from 2010
+sats_all <- choc_sats_unc$sats_all
+sats_2010 <- sats_all[, c('lon', 'lat', 'kd_2010')]
+sat_rast_2010 <- make_rast_fun(sats_2010, 'kd_2010')
 
-# set up raster template
-rast <- raster()
-extent(rast) <- extent(sats_ave)
-ncol(rast) <- length(unique(sats_ave$lon))
-nrow(rast) <- length(unique(sats_ave$lat))
+# sample the raster with in situ data locations
+samp_dat <- choc_situ
+coordinates(samp_dat) <- c('Longitude', 'Latitude')
+samp_dat <- extract(sat_rast_2010, samp_dat, sp = T) %>% 
+  data.frame  %>% 
+  mutate(
+    layer = kd_2010,
+    cumlayer = cumsum(layer)/max(cumsum(layer))
+    )
+samp_dat <- samp_dat[, !names(samp_dat) %in% 'kd_2010']
 
-sat_rast <- rasterize(sats_ave, rast, sats_ave$kz_ave, fun = mean)  
+# use kd_binomod and kd_backsat to get models for correcting and to implement
+# models for transformation
+kd_mods <- kd_binomod(samp_dat, 'kPAR', 'cumkPAR', 'layer', 'cumlayer')
 
-choc_sats <- list(ave_rast = sat_rast, sats_all = sats_all)
-save(choc_sats, file = 'data/choc_sats.RData')
-save(choc_sats, file = 'M:/docs/manuscripts/sgdepth_manu/data/choc_sats.RData')
+# an example
+# kd_backsat(kd_mods, samp_dat, xsat = c(1), plot = TRUE)
+
+# correct satellite data
+to_crct <- grep('^kd_', names(sats_all), value = T)
+crc <- apply(
+  sats_all[, to_crct], 2, 
+  function(x) kd_backsat(kd_mods, samp_dat, xsat = x)
+)
+sats_all[, to_crct] <- crc
+
+# replace old kd_ave with new from corrected data
+sats <- sats_all
+locs <- sats[, grepl('lat|lon', names(sats))]
+sats <- sats[, !grepl('lat|lon', names(sats))]
+sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
+sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kd_ave = sats_all, sats)
+
+# make a raster object from the averaged data
+sats_ave <- sats_all[, c('lon', 'lat', 'kd_ave')]
+sat_rast <- make_rast_fun(sats_ave, 'kd_ave')
+
+# save the new corrected data for comparison w/ uncorrected
+choc_sats_crc <- list(ave_rast = sat_rast, sats_all = sats_all)
+save(choc_sats_crc, file = 'data/choc_sats_crc.RData')
+save(choc_sats_crc, file = 'M:/docs/manuscripts/sgdepth_manu/data/choc_sats_crc.RData')
+
 
