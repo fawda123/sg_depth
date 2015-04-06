@@ -252,7 +252,10 @@ save(shps, file = 'M:/docs/manuscripts/sgdepth_manu/data/shps.RData')
 
 ######
 # processing satellite derived water clarity (clarity, not kd) for Tampa Bay
-  
+
+rm(list = ls())
+
+source('R/funcs.r')
 library(magrittr) 
   
 files <- list.files('data/satellite/Tampa_Bay', '_clarity\\.txt$|lat|lon', full.names = TRUE)
@@ -299,16 +302,7 @@ library(raster)
 library(maptools)
 
 sats_ave <- sats_all[, c('lon', 'lat', 'clarity_ave')]
-
-sp::coordinates(sats_ave) <- c('lon', 'lat')
-
-# set up raster template
-rast <- raster()
-extent(rast) <- extent(sats_ave)
-ncol(rast) <- length(unique(sats_ave$lon))
-nrow(rast) <-length(unique(sats_ave$lat))
-
-sat_rast <- rasterize(sats_ave, rast, sats_ave$clarity_ave, fun = mean) 
+sat_rast <- make_rast_fun(sats_ave, 'clarity_ave')
 
 tb_sats <- list(ave_rast = sat_rast, sats_all = sats_all)
 save(tb_sats, file = 'data/tb_sats_rast.RData')
@@ -317,6 +311,8 @@ save(tb_sats, file = 'M:/docs/manuscripts/sgdepth_manu/data/tb_sats.RData')
 ######
 # processing satellite derived water clarity (kd) for Choctawhatchee Bay
 # this is different from TB because it has not been validated with in situ
+
+rm(list = ls())
 
 library(magrittr) 
 library(raster)
@@ -367,18 +363,13 @@ coordinates(sats) <- c('lon', 'lat')
 sel <- !is.na(sats %over% choc_seg)
 sats <- data.frame(sats[c(sel), ])
 
-# create a new column that is the average kd only for 2003-2007 (sg data is for 2007)
+# rearrange to put lon/lat first, do not take average
 locs <- sats[, grepl('lat|lon', names(sats))]
-sats <- sats[, !grepl('lat|lon|2008$|2009$|2010$|2011$|2012$|2013$', names(sats))]
-sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
-sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kd_ave = sats_all, sats)
-
-# make a raster object from the averaged data
-sats_ave <- sats_all[, c('lon', 'lat', 'kd_ave')]
-sat_rast <- make_rast_fun(sats_ave, 'kd_ave')
+sats <- sats[, !grepl('lat|lon', names(sats))]
+sats_all <- data.frame(lon = locs$lon, lat = locs$lat, sats)
 
 # save the uncorrected data for comparison w/ corrected
-choc_sats_unc <- list(ave_rast = sat_rast, sats_all = sats_all)
+choc_sats_unc <- sats_all
 save(choc_sats_unc, file = 'data/choc_sats_unc.RData')
 save(choc_sats_unc, file = 'M:/docs/manuscripts/sgdepth_manu/data/choc_sats_unc.RData')
 
@@ -451,16 +442,18 @@ data(choc_sats_unc)
 data(choc_situ)
 
 # make a raster file from 2010
-sats_all <- choc_sats_unc$sats_all
+sats_all <- choc_sats_unc
 sats_2010 <- sats_all[, c('lon', 'lat', 'kd_2010')]
 sat_rast_2010 <- make_rast_fun(sats_2010, 'kd_2010')
 
 # sample the raster with in situ data locations
 samp_dat <- choc_situ
 coordinates(samp_dat) <- c('Longitude', 'Latitude')
-samp_dat <- extract(sat_rast_2010, samp_dat, sp = T) %>% 
+samp_dat <- extract(sat_rast_2010, samp_dat) %>% 
   data.frame  %>% 
   mutate(
+    kPAR = choc_situ$kPAR,
+    cumkPAR = choc_situ$cumkPAR,
     layer = kd_2010,
     cumlayer = cumsum(layer)/max(cumsum(layer))
     )
