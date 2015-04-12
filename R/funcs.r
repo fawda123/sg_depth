@@ -773,7 +773,7 @@ make_rast_fun <- function(dat_in, fill_col){
 }
 
 ######
-#' Estimate cumulative distribution curves for in situ and satellite estimated kd values using logistic regression
+#' Estimate cumulative distribution curves for in situ and satellite estimated kd values, then get linear model for corrections
 #' 
 #' @param dat_in data.frame with in situ and satellite measured kd values, including cumulutive sums of each vector that are scaled by the maximum.  The data.frame is ordered based on the ascending values of in situ kd
 #' @param xsitu chr string of column name for in situ kd values
@@ -781,27 +781,19 @@ make_rast_fun <- function(dat_in, fill_col){
 #' @param xsats chr string of column for satellite kd values
 #' @parma ysats chr string of column name for cumulative sum of satellite kd values
 #' 
-#' @return A list with two regresion object, the first is the regression for the in situe curve and the second is the regression for the satellite estimated curve
-kd_binomod <- function(dat_in, xsitu, ysitu, xsats, ysats){
+#' @return A list with two regression objects, the first is the regression for the in situe curve and the second is the regression for the satellite estimated curve
+kd_mod <- function(dat_in, xsitu, ysitu, xsats, ysats){
   
   # format data for glm, needs column of denominators for each prop
-  to_mod <- data.frame(dat_in) %>% 
-    mutate(
-      totsitu = max(dat_in[ysitu]),
-      totsats = max(dat_in[ysats])
-    )
+  to_mod <- data.frame(dat_in)
 
   # create the models
-  form_in1 <- substitute(cbind(y, totsitu - y) ~ x, 
+  form_in1 <- substitute(y ~ x, 
     list(y = as.name(ysitu), x = as.name(xsitu)))
-  form_in2 <- substitute(cbind(y, totsats - y) ~ x, 
+  form_in2 <- substitute(y ~ x, 
     list(y = as.name(ysats), x = as.name(xsats)))
-  mod1 <- suppressWarnings( # non integers
-    glm(form_in1, family = binomial(logit), data = to_mod)
-  )
-  mod2 <- suppressWarnings( # non integers
-    glm(form_in2, family = binomial(logit), data = to_mod)
-  )
+  mod1 <- lm(form_in1, data = to_mod)
+  mod2 <- lm(form_in2, data = to_mod)
   
   # return output
   mods <- list(mod1, mod2)
@@ -810,7 +802,7 @@ kd_binomod <- function(dat_in, xsitu, ysitu, xsats, ysats){
 }
 
 ######
-#' Use the output of kd_binomod to get corrected kd values
+#' Use the output of kd_mod to get corrected kd values
 #'
 #' @param mods_in list of models returned from kd_binomod
 #' @param dat_in data.frame that was used as input to kd_binomod
@@ -822,19 +814,20 @@ kd_binomod <- function(dat_in, xsitu, ysitu, xsats, ysats){
 #' @param xsats character string of column name of satellite kd values in dat_in
 #' @param ysitu character string of column name of cumulative in situ kd values in dat_in
 #' @param ysats character string of column name of cumulative satellite kd values in dat_in
+#' @param ylim two element numeric vector indicating the y-axis range for the plot
 #'
 #' @return Vector of corrected kd values if \code{plot = FALSE}, otherwise a plot showing the empirical data used to estimate each model and a pathway showing the corrected satellite data.
 #'
 kd_backsat <- function(mods_in, dat_in, xsat, xrng = c(0, 2), steps = 2000,
-  plot = FALSE, xsitu = 'kPAR', xsats = 'layer', ysitu = 'cumkPAR', 
-  ysats = 'cumlayer'){
+  plot = FALSE, xsitu = 'kPAR', xsats = 'layer', ysitu = 'cumkPAR',
+  ysats = 'cumlayer', ylim = c(0, 1)){
   
   # get corrected kd from satellite kd
   preddat <- data.frame(xsat)
   names(preddat) <- xsats
   yback <- predict(mods_in[[2]], newdata = preddat, type = 'response')
   coefs <- coefficients(mods_in[[1]])
-  xback <- (log(yback/(1 - yback)) - coefs[1])/coefs[2]
+  xback <- (yback - coefs[1])/coefs[2]
   
   if(plot){
     
@@ -874,7 +867,8 @@ kd_backsat <- function(mods_in, dat_in, xsat, xrng = c(0, 2), steps = 2000,
       geom_point(dat = backdat, aes(x = x, y = y, group = group, colour = group), 
         colour = 'black', pch = 16, size = 4) +
       scale_x_continuous(name = expression(italic(K [d]))) + 
-      scale_y_continuous(name = expression(paste('Cumulative ', italic(K [d])))) +
+      scale_y_continuous(name = expression(paste('Cumulative ', italic(K [d]))),
+        limits = ylim) +
       theme_classic() + 
       theme(legend.title = element_blank(), 
         legend.position = c(0, 1), legend.justification = c(0, 1),

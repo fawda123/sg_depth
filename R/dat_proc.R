@@ -375,6 +375,9 @@ save(choc_sats_unc, file = 'M:/docs/manuscripts/sgdepth_manu/data/choc_sats_unc.
 
 ##
 # develop correction for kd using in situ data
+
+# ## the following gets in situ kd data from florida estuaries database
+# # actual correction is applied below
 #
 # rm(list = ls())
 # 
@@ -386,6 +389,7 @@ save(choc_sats_unc, file = 'M:/docs/manuscripts/sgdepth_manu/data/choc_sats_unc.
 #
 # ##
 # # process raw data that was exported from florida estuaries database
+#
 # # L:\lab\FloridaEstuaries\yates\working\FL_Estuaries.mdb
 # # kpar and meta as separate files
 # # processed data saved as 'choc_situ.RData'
@@ -461,10 +465,10 @@ samp_dat <- samp_dat[, !names(samp_dat) %in% 'kd_2010']
 
 # use kd_binomod and kd_backsat to get models for correcting and to implement
 # models for transformation
-kd_mods <- kd_binomod(samp_dat, 'kPAR', 'cumkPAR', 'layer', 'cumlayer')
+kd_mods <- kd_mod(samp_dat, 'kPAR', 'cumkPAR', 'layer', 'cumlayer')
 
 # an example
-# kd_backsat(kd_mods, samp_dat, xsat = c(1), plot = TRUE)
+# kd_backsat(kd_mods, samp_dat, xsat = 0.5, plot = T)
 
 # correct satellite data
 to_crct <- grep('^kd_', names(sats_all), value = T)
