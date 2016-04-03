@@ -1,5 +1,6 @@
 name: sg_depth
 account: beckmw
-bundleId: 171272
-url: http://beckmw.shinyapps.io/sg_depth
 server: shinyapps.io
+bundleId: 409589
+url: https://beckmw.shinyapps.io/sg_depth/
+when: 1459723284.17363
