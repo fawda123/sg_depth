@@ -54,10 +54,6 @@ shinyUI(fluidPage(
               ),
               selected = "nope"),
     
-    checkboxInput("show_krige", 
-              label = "Interpolate smooth surface",
-              value = F),
-
     submitButton("Submit")
     
   ),
