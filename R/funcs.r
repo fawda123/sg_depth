@@ -498,7 +498,7 @@ g_legend<-function(a.gplot){
 # nsim number of monte carlo simulations for each value in newdata
 # trace logical for counter output
 sens <- function(doc_in, ...) UseMethod('sens')
-sens.doc <- function(doc_in, level = 0.95, nsim = 10000, trace = T, remzero = T, ...){
+sens.doc <- function(doc_in, level = 0.05, trace = T, remzero = T, ...){
    
   # get model from doc_in for vcov matrix
   mod <- attr(doc_in, 'logis_mod')
@@ -506,7 +506,7 @@ sens.doc <- function(doc_in, level = 0.95, nsim = 10000, trace = T, remzero = T,
     message('No model in object')
     return(doc_in)
   }
-  
+
   # get linear model from doc_in
   est_fun <- attr(doc_in, 'est_fun')
   if(!'function' %in% class(est_fun)){
@@ -518,73 +518,41 @@ sens.doc <- function(doc_in, level = 0.95, nsim = 10000, trace = T, remzero = T,
   Depth <- coefficients(mod)['xmid']
   names(Depth) <- 'Depth'
  
-  # get parameter coefficients from model
-  COEF <- coef(mod)
-     
   ## get variance-covariance matrix from model
-  VCOV <- vcov(mod)
+  vcovmod <- vcov(mod)
 
-  # add depth value to vcov matrix
-  NCOL <- ncol(VCOV)
-  ADD1 <- c(rep(0, NCOL))
-  ADD1 <- matrix(ADD1, ncol = 1)
-  colnames(ADD1) <- names(Depth)
-  VCOV <- cbind(VCOV, ADD1)
-  ADD2 <- c(rep(0, NCOL + 1))
-  ADD2 <- matrix(ADD2, nrow = 1)
-  rownames(ADD2) <- names(Depth)
-  VCOV <- rbind(VCOV, ADD2) 
-  
-  # create mean vector for 'mvrnorm'
-  # these are expected values for coefficients and input value
-  MU <- c(COEF, Depth)
-  
-  # simulate
-  simMAT <- MASS::mvrnorm(n = nsim, mu = MU, Sigma = VCOV, empirical = TRUE)
-  
-  # evaluate expression on rows of simMAT
-  # gets simulated values of sg_prp on y-axis at inflection depth
-  EVAL <- eval(expression(SSlogis(Depth, Asym, xmid, scal)), 
-    envir = as.data.frame(simMAT))
-  
-  # summarize predictions by quantiles, i.e., lower, upper bounds on sg_prp
-  QUANT <- as.numeric(quantile(EVAL, c((1 - level)/2, level + (1 - level)/2)))
-  
   if(trace) cat("\n")
-  
+
   ## get lower and upper bounds on doc estimates
-  # from simulations above
   
-  # sg_prp value at predicted inflection point from model
-  sg_prp <- as.numeric(predict(mod, newdata = data.frame(Depth)))
+  # variance of slope is the combined variance/covariance of beta and gamma
+  betavar <- vcovmod['xmid', 'xmid']
+  gammavar <- vcovmod['scal', 'scal']
+  covar <- vcovmod['xmid', 'scal']
+  slo_unc <- betavar + gammavar + 2*covar
   
-  # get slope, intercept of original linear model from 'est_fun' in 'doc_in'
-  int_val <- est_fun(0)
-  slope_val <- est_fun(1) - int_val
-  
-  # shift to apply to intercept based on simulationss
-  up_shift <- QUANT[2] - sg_prp
-  lo_shift <- QUANT[1] - sg_prp
-  
-  # identify x values at sg_prp = 0 for upper and lower limits of curve
-  upper_est <- -1 * (up_shift + int_val) / slope_val
-  lower_est <- -1 * (lo_shift + int_val) / slope_val
-  
-  # figure out upper lower bounds based on difference from z_cmax
-  upper_shift <- upper_est - attr(doc_in, 'z_cmax')
-  lower_shift <- lower_est - attr(doc_in, 'z_cmax')
-  
+  # df is degrees of freedom from model
+  # n is sample size used to fit model
+  # quant is the quantile of the t distribution 
+  df <- summary(mod)$df[2]
+  n <- length(na.omit(doc_in$sg_prp))
+  quant <- qt(1 - level / 2, df = df)
+	 
+  # marg_err is the margin of error
+  # uses slope uncertainty, sample size, and quantile
+  marg_err <- quant * sqrt(slo_unc) / sqrt(n)
+
   # lower estimates based on uncertainty
-  z_cmax <- lower_shift + attr(doc_in, 'z_cmax')
-  z_cmin <- lower_shift + attr(doc_in, 'z_cmin')
-  z_cmed <- lower_shift + attr(doc_in, 'z_cmed')
-  lower_est <- list(lower_shift = lower_shift, z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax)
+  z_cmax <- attr(doc_in, 'z_cmax') - marg_err
+  z_cmin <- attr(doc_in, 'z_cmin') - marg_err
+  z_cmed <- attr(doc_in, 'z_cmed') - marg_err
+  lower_est <- list(lower_shift = -1 * marg_err, z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax)
     
   # upper estimates based on uncertainty
-  z_cmax <- upper_shift + attr(doc_in, 'z_cmax')
-  z_cmin <- upper_shift + attr(doc_in, 'z_cmin')
-  z_cmed <- upper_shift + attr(doc_in, 'z_cmed')
-  upper_est <- list(upper_shift = upper_shift, z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax)
+  z_cmax <- attr(doc_in, 'z_cmax') + marg_err
+  z_cmin <- attr(doc_in, 'z_cmin') + marg_err
+  z_cmed <- attr(doc_in, 'z_cmed') + marg_err
+  upper_est <- list(upper_shift = marg_err, z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax)
   
   # replace all estimates with NA if z_cmax confidence interval includes zero
   if(remzero & lower_est$z_cmax <= 0){
