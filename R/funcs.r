@@ -275,7 +275,7 @@ plot.doc <- function(doc_in, sens = F, baseonly = F, logisonly = F){
       yvals = rep(0, 3)
     )
     get_vals <- c('z_cmin', 'z_cmed', 'z_cmax')
-    doc_in <- sens(doc_in, trace = F)
+    doc_in <- sens(doc_in, trace = F, remzero = F)
     lowers <- round(unlist(attr(doc_in, 'lower_est')[get_vals]), 2)
     uppers <- round(unlist(attr(doc_in, 'upper_est')[get_vals]), 2)
     
@@ -489,9 +489,7 @@ g_legend<-function(a.gplot){
   return(legend)}
 
 ######
-# get confidence intervals for doc object using MC sims
-# modified from...
-# http://rmazing.wordpress.com/2013/08/14/predictnls-part-1-monte-carlo-simulation-confidence-intervals-for-nls-models/
+# get prediction intervals for doc object
 #
 # doc_in doc input object
 # level percent level of confidence intervals
@@ -524,35 +522,27 @@ sens.doc <- function(doc_in, level = 0.05, trace = T, remzero = T, ...){
   if(trace) cat("\n")
 
   ## get lower and upper bounds on doc estimates
-  
-  # variance of slope is the combined variance/covariance of beta and gamma
+
+  # variance of slope is the combined variance/covariance of beta and 2gamma
+  # constants propogate to four times variance and two times 2cov (where 2cov is already in the equation for A + B)
+  # here we are A + 2B
   betavar <- vcovmod['xmid', 'xmid']
   gammavar <- vcovmod['scal', 'scal']
   covar <- vcovmod['xmid', 'scal']
-  slo_unc <- betavar + gammavar + 2*covar
+  slo_var <- betavar + 4 * gammavar + 4 * covar
+  slo_pr_int <- qnorm(1 - (level/2)) * sqrt(slo_var)
   
-  # df is degrees of freedom from model
-  # n is sample size used to fit model
-  # quant is the quantile of the t distribution 
-  df <- summary(mod)$df[2]
-  n <- length(na.omit(doc_in$sg_prp))
-  quant <- qt(1 - level / 2, df = df)
-	 
-  # marg_err is the margin of error
-  # uses slope uncertainty, sample size, and quantile
-  marg_err <- quant * sqrt(slo_unc) / sqrt(n)
-
   # lower estimates based on uncertainty
-  z_cmax <- attr(doc_in, 'z_cmax') - marg_err
-  z_cmin <- attr(doc_in, 'z_cmin') - marg_err
-  z_cmed <- attr(doc_in, 'z_cmed') - marg_err
-  lower_est <- list(lower_shift = -1 * marg_err, z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax)
+  z_cmax <- attr(doc_in, 'z_cmax') - slo_pr_int
+  z_cmin <- attr(doc_in, 'z_cmin') - slo_pr_int
+  z_cmed <- attr(doc_in, 'z_cmed') - slo_pr_int
+  lower_est <- list(lower_shift = -1 * slo_pr_int, z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax)
     
   # upper estimates based on uncertainty
-  z_cmax <- attr(doc_in, 'z_cmax') + marg_err
-  z_cmin <- attr(doc_in, 'z_cmin') + marg_err
-  z_cmed <- attr(doc_in, 'z_cmed') + marg_err
-  upper_est <- list(upper_shift = marg_err, z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax)
+  z_cmax <- attr(doc_in, 'z_cmax') + slo_pr_int
+  z_cmin <- attr(doc_in, 'z_cmin') + slo_pr_int
+  z_cmed <- attr(doc_in, 'z_cmed') + slo_pr_int
+  upper_est <- list(upper_shift = slo_pr_int, z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax)
   
   # replace all estimates with NA if z_cmax confidence interval includes zero
   if(remzero & lower_est$z_cmax <= 0){
