@@ -272,7 +272,7 @@ plot.doc <- function(doc_in, sens = F, baseonly = F, logisonly = F){
     est_fun <- attr(doc_in, 'est_fun')
     to_plo4 <- data.frame(
       Depth = unlist(ests), 
-      yvals = rep(0, 3)
+      yvals = c(yends, 0)
     )
     get_vals <- c('z_cmin', 'z_cmed', 'z_cmax')
     doc_in <- sens(doc_in, trace = F, remzero = F)
@@ -300,29 +300,11 @@ plot.doc <- function(doc_in, sens = F, baseonly = F, logisonly = F){
     leg_labmed <- bquote(italic('Z' ['c, med']) ~ .(leg_dep[2]) ~ '(' ~ .(leg_low[2]) ~ ', ' ~ .(leg_ups[2]) ~ ')')
     leg_labmax <- bquote(italic('Z' ['c, max']) ~ .(leg_dep[3]) ~ '(' ~ .(leg_low[3]) ~ ', ' ~ .(leg_ups[3]) ~ ')')
     leg_lab <- c(leg_labmin, leg_labmed, leg_labmax)
-      
-    # get sensitivitity estimates shifts for polygon
-    upper_shift <- attr(doc_in, 'upper_est')$upper_shift
-    lower_shift <- attr(doc_in, 'lower_est')$lower_shift
-    int_val <- est_fun(0)
-    slope_val <- (-1 * int_val) + est_fun(1)
-    
-    # get polygon of uncertainy around inflection point
-    xvals <- 0.7 * attr(doc_in, 'lower_est')$z_cmin
-    xvals <- c(xvals, 1.3 * attr(doc_in, 'upper_est')$z_cmax)
-    xvals <- seq(xvals[1], xvals[2], length = 20)
-    up_fun <- function(x) slope_val * x + int_val + upper_shift
-    up_fun <- up_fun(xvals)
-    low_fun <- function(x) slope_val * x + int_val + lower_shift
-    low_fun <- low_fun(xvals)
-    poly_plo <- data.frame(x = c(xvals, rev(xvals)), y = c(low_fun, rev(up_fun)))
     
     # base plot including uncertainty
     p <- p +
-      geom_polygon(data = poly_plo, aes(x = x, y = y), 
-        fill = 'lightgreen', alpha = 0.3) +
       geom_line(data = to_plo2, 
-        aes(x = Depth, y = sg_prp)
+        aes(x = Depth, y = sg_prp), colour = 'grey', size = 1.5
         ) +
       coord_cartesian(xlim = x_lims, ylim = y_lims) + 
       stat_function(fun = est_fun, colour = 'lightgreen', size = 1.5, 
@@ -333,6 +315,9 @@ plot.doc <- function(doc_in, sens = F, baseonly = F, logisonly = F){
       geom_segment(x = ests$z_cmed, y = 0, xend = ests$z_cmed, 
         yend = yends[2], linetype = 'dashed', colour = 'lightgreen',
         size = 1.5, alpha = 0.6) +
+      geom_errorbarh(data = to_plo4,
+        aes(x = Depth, y = yvals), 
+        xmin = lowers, xmax = uppers, height = 0.05) +
       geom_point(data = to_plo4, 
         aes(x = Depth, y = yvals, fill = factor(Depth)), 
         size = 6, pch = 21) +
@@ -492,7 +477,7 @@ g_legend<-function(a.gplot){
 # get prediction intervals for doc object
 #
 # doc_in doc input object
-# level percent level of confidence intervals
+# level percent level of prediction intervals
 # nsim number of monte carlo simulations for each value in newdata
 # trace logical for counter output
 sens <- function(doc_in, ...) UseMethod('sens')
@@ -516,35 +501,55 @@ sens.doc <- function(doc_in, level = 0.05, trace = T, remzero = T, ...){
   Depth <- coefficients(mod)['xmid']
   names(Depth) <- 'Depth'
  
-  ## get variance-covariance matrix from model
-  vcovmod <- vcov(mod)
-
   if(trace) cat("\n")
 
-  ## get lower and upper bounds on doc estimates
+  ### get lower and upper bounds on doc estimates
+  # var for zcmin, zcmed, zcmax are all different
+  # all depend on variance/covariance of beta/gamma 
 
-  # variance of slope is the combined variance/covariance of beta and 2gamma
-  # constants propogate to four times variance and two times 2cov (where 2cov is already in the equation for A + B)
-  # here we are A + 2B
+  vcovmod <- vcov(mod)
   betavar <- vcovmod['xmid', 'xmid']
   gammavar <- vcovmod['scal', 'scal']
   covar <- vcovmod['xmid', 'scal']
-  slo_var <- betavar + 4 * gammavar + 4 * covar
-  slo_pr_int <- qnorm(1 - (level/2)) * sqrt(slo_var)
   
-  # lower estimates based on uncertainty
-  z_cmax <- attr(doc_in, 'z_cmax') - slo_pr_int
-  z_cmin <- attr(doc_in, 'z_cmin') - slo_pr_int
-  z_cmed <- attr(doc_in, 'z_cmed') - slo_pr_int
-  lower_est <- list(lower_shift = -1 * slo_pr_int, z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax)
+  # quantile to eval given level
+  zquant <- qnorm(1 - (level/2))
+ 
+  ## 
+  # zcmin = beta - 2gamma
+  zcmin_var <- betavar + 4 * gammavar - 4 * covar
+  zcmin_print <- zquant * sqrt(zcmin_var)
+
+  ## 
+  # zcmed = beta
+  zcmed_var <- betavar
+  zcmed_print <- zquant * sqrt(zcmed_var)
+     
+  ##
+  # zcmax = beta + 2gamma
+  zcmax_var <- betavar + 4 * gammavar + 4 * covar
+  zcmax_print <- zquant * sqrt(zcmax_var)
+
+  ##
+  # lower prediction intervals
+  z_cmin <- attr(doc_in, 'z_cmin') - zcmin_print
+  z_cmed <- attr(doc_in, 'z_cmed') - zcmed_print
+  z_cmax <- attr(doc_in, 'z_cmax') - zcmax_print
+  lower_est <- list(
+    lower_shift = -1 * c(zcmin_print, zcmed_print, zcmax_print), 
+    z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax
+    )
     
   # upper estimates based on uncertainty
-  z_cmax <- attr(doc_in, 'z_cmax') + slo_pr_int
-  z_cmin <- attr(doc_in, 'z_cmin') + slo_pr_int
-  z_cmed <- attr(doc_in, 'z_cmed') + slo_pr_int
-  upper_est <- list(upper_shift = slo_pr_int, z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax)
+  z_cmin <- attr(doc_in, 'z_cmin') + zcmin_print
+  z_cmed <- attr(doc_in, 'z_cmed') + zcmed_print
+  z_cmax <- attr(doc_in, 'z_cmax') + zcmax_print
+  upper_est <- list(
+    upper_shift = c(zcmin_print, zcmed_print, zcmax_print), 
+    z_cmin = z_cmin, z_cmed = z_cmed, z_cmax = z_cmax
+    )
   
-  # replace all estimates with NA if z_cmax confidence interval includes zero
+  # replace all estimates with NA if z_cmax prediction interval includes zero
   if(remzero & lower_est$z_cmax <= 0){
 
     attr(doc_in, 'z_cmax') <- NA
