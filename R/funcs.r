@@ -515,21 +515,40 @@ sens.doc <- function(doc_in, level = 0.05, trace = T, remzero = T, ...){
   # quantile to eval given level
   zquant <- qnorm(1 - (level/2))
  
-  ## 
-  # zcmin = beta - 2gamma
-  zcmin_var <- betavar + 4 * gammavar - 4 * covar
-  zcmin_print <- zquant * sqrt(zcmin_var)
+  # variance estimates for zcmed and zcmax change if beta - 2gamma (zcmin) is less than zero
+  zc_min <- attr(doc_in, 'z_cmin')
+  if(zc_min > 0){
+    
+    ## 
+    # zcmin = beta - 2gamma
+    zcmin_var <- betavar + 4 * gammavar - 4 * covar
+  
+    ## 
+    # zcmed = beta
+    zcmed_var <- betavar
+       
+  } else {
 
+    ## 
+    # zcmin = 0
+    zcmin_var <- 0
+  
+    ## 
+    # zcmed = (beta + 2gamma)/2
+    zcmed_var <- (betavar + 4 * gammavar + 4 * covar) / 4
+    
+  }
+  
   ## 
-  # zcmed = beta
-  zcmed_var <- betavar
-  zcmed_print <- zquant * sqrt(zcmed_var)
-     
-  ##
   # zcmax = beta + 2gamma
+  # variance is same regardless of conditions above
   zcmax_var <- betavar + 4 * gammavar + 4 * covar
+  
+  # prediction intervals
+  zcmin_print <- zquant * sqrt(zcmin_var)
+  zcmed_print <- zquant * sqrt(zcmed_var)
   zcmax_print <- zquant * sqrt(zcmax_var)
-
+  
   ##
   # lower prediction intervals
   z_cmin <- attr(doc_in, 'z_cmin') - zcmin_print
