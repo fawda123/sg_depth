@@ -44,6 +44,18 @@ shinyUI(fluidPage(
                  max=2, 
                  value=0.02, step = 0.01),
     
+    numericInput("maxbin", 
+                 label = h4("Maximum bin size (m)"), 
+                 min=0.00001, 
+                 max=20, 
+                 value=0.5, step = 0.1),
+    
+    numericInput("minpts", 
+                 label = h4("Minimum points per bin"), 
+                 min=2, 
+                 max=10000, 
+                 value=50, step = 10),
+    
     selectInput("show_all", 
             label = h4("Show all estimates"), 
             choices = list(

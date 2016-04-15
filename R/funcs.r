@@ -57,11 +57,14 @@ formtab_fun <- function(x, rnd_val = 2, dig_val = 2, nsm_val = 2) {
 logis_est <- function(dat_in, resp = 'sg_prp', new_vals = 500){
   
   pts <- dat_in
-  
+
   # logistic growth
-	Asym <- max(pts[, resp], na.rm = T)
-	xmid <- median(pts$Depth, na.rm = T)
-	scal <- quantile(pts$Depth, 0.75, na.rm = T) - xmid
+  
+  # starting parameters
+  pts_tmp <- pts[pts[, resp] > 0, ]
+	Asym <- max(pts_tmp[, resp], na.rm = T)
+	xmid <- median(pts_tmp$Depth, na.rm = T)
+	scal <- as.numeric(quantile(pts_tmp$Depth, 0.75, na.rm = T) - xmid)
 	form_in <- substitute(x ~ SSlogis(Depth, Asym,  xmid, scal), 
     list(x = as.name(resp)))
 
@@ -69,7 +72,7 @@ logis_est <- function(dat_in, resp = 'sg_prp', new_vals = 500){
 #   upper_bnds <- c(Asym = 2, xmid = Inf, scal = Inf)
 #   mod <- try({nls(form_in, data = pts, na.action = na.exclude,
 #     upper = upper_bnds, algorithm = 'port')}, silent = T)
-	mod <- try({nls(form_in, data = pts, na.action = na.exclude)}, silent = T)
+	mod <- try({nls(form_in, data = pts_tmp, na.action = na.exclude)}, silent = T)
 	
   # values for prediction
 	dep_rng <- range(pts[, 'Depth'], na.rm = T)
@@ -146,36 +149,51 @@ get_ests <- function(dat_in, asym){
 # 'dat_in' is data from 'buff_ext'
 # 'depth_var' is name of depth column in input data
 # 'sg_var' is name of seagrass column in input data
-doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass', sg_cat = c('Continuous', 'Discontinuous')){
-  
+# 'maxbin' maximum bin size
+# 'minpts' minimum points in a bin
+doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass', sg_cat = c('Continuous', 'Discontinuous'), maxbin = 0.5, minpts = 50){
+
   # sanity check
   if(!'data.frame' %in% class(dat_in)) dat_in <- data.frame(dat_in)
+  if(any(sign(dat_in[, depth_var]) == -1))
+    stop('Depth values must be positive')
   
-	# order by depth, assumes column is negative
-  dat_in <- dat_in[order(dat_in[, depth_var], decreasing = T), ]
+	# order by depth
+  dat_in <- dat_in[order(dat_in[, depth_var]), ]
 	dat_in$depth <- dat_in[, depth_var]
-  
-  # bin depth values
-  dat_in[, depth_var] <- round(dat_in[, depth_var], 1)
-	
-	# cumulative sum of pts with all seagrass and all points
-	# assumes NA is empty
-	sg_pts <- table(dat_in[dat_in[, sg_var] %in% sg_cat, depth_var])
-  
+
+	# sg_cat to 1	
+	# convert NA to zero
+  dat_in[, sg_var] <- as.character(dat_in[, sg_var])
+	dat_in[dat_in[, sg_var] %in% sg_cat, sg_var] <- '1'
+	dat_in[dat_in[, sg_var] != 1 | is.na(dat_in[, sg_var]), sg_var] <- '0'
+	dat_in[, sg_var] <- as.numeric(dat_in[, sg_var])
+
   # stop function if no seagrass found
-  if(length(sg_pts) == 0) stop('No seagrass present')
-  
-	sg_pts <- data.frame(Depth = names(sg_pts), sg_pts = as.numeric(sg_pts),
-		row.names = 1:length(sg_pts))
-	dep_pts <- table(dat_in[, depth_var])
-	dep_pts <- data.frame(Depth = names(dep_pts), dep_pts = as.numeric(dep_pts), 
-		row.names = 1:length(dep_pts))
-	
-	# combine all pts and seagrass pts, depth as numeric
-	pts <- merge(dep_pts, sg_pts, by = 'Depth', all.x = T)
-	pts$Depth <- as.numeric(as.character(pts$Depth))
-	# output
-  pts$sg_prp <- with(pts, sg_pts/dep_pts)
+  if(sum(dat_in[, sg_var]) == 0) stop('No seagrass present')
+
+	# create bins from shallow to inreasing depth
+	# each is a maximum width, unless there are at least a minimum number of points in the bin that define the bin width
+	dat_sub <- dat_in
+	pts <- NULL
+	while(1 <= nrow(dat_sub)){
+	  
+	  dep_rng <- with(dat_sub, Depth <= (Depth[1] + maxbin))
+	  dep_rng <- dat_sub[dep_rng, , drop = F]
+	  dep_rng <- dep_rng[1:min(minpts, nrow(dep_rng)), , drop = F]
+	  dep_bin <- with(dep_rng, data.frame(
+	    mean(Depth, na.rm = T), 
+	    length(Depth), 
+	    mean(Seagrass, na.rm = T)
+	    )
+	  )
+	  
+	  pts <- rbind(pts, dep_bin)
+	  dat_sub <- dat_sub[-c(1:nrow(dep_rng)), , drop = F]
+	  
+	}
+
+	names(pts) <- c('Depth', 'n', 'sg_prp')
 	
 	##
 	# estimate a logistic growth function for the data
@@ -245,7 +263,7 @@ plot.doc <- function(doc_in, sens = F, baseonly = F, logisonly = F){
   # y, x axis limits
   y_lims <- 1.2 * max(na.omit(to_plo$sg_prp))
   y_lims <- c(-0.05 * y_lims, y_lims)
-  x_lims <- max(1.2 * max(na.omit(to_plo)$Depth), 1.2 * ests$z_cmin, na.rm = T)
+  x_lims <- max(1.2 * max(na.omit(to_plo)$Depth), 1.2 * ests$z_cmax, na.rm = T)
   x_lims <- c(-0.025 * x_lims, x_lims)
 
   # base plot if no estimate is available

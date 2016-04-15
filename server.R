@@ -54,6 +54,8 @@ shinyServer(function(input, output) {
     point_lab <- input$point_lab
     radius <- input$radius
     show_all <- input$show_all
+    maxbin <- input$maxbin
+    minpts <- input$minpts
     
     # get data from loaded shapefiles and input segment
     seg_shp <- shps[[paste0('seg_', gsub('^.*_', '', segment), '.shp')]]
@@ -62,7 +64,7 @@ shinyServer(function(input, output) {
     # random points  
     set.seed(grid_seed)
     pts <- grid_est(seg_shp, spacing = grid_spc)
-  
+
     # all estimates
     if(show_all != 'nope'){
       
@@ -74,7 +76,7 @@ shinyServer(function(input, output) {
         ests <- try({
           buff_pts <- buff_ext(sgpts_shp, eval_pt, buff = radius)
       	  est_pts <- data.frame(buff_pts)
-          doc_single <- attr(doc_est(est_pts), show_all)
+          doc_single <- attr(doc_est(est_pts, maxbin = maxbin, minpts = minpts), show_all)
           doc_single
         })
       	if('try-error' %in% class(ests)) ests <- NA
@@ -139,7 +141,7 @@ shinyServer(function(input, output) {
         buff_ext(sgpts_shp, test_pt, buff = radius)
       }, silent = T)
       if('try-error' %in% class(buff_pts)) return()
-      
+
       p1 <- ggplot(seg_shp, aes(long, lat)) + 
         geom_polygon(fill = 'white') +
         geom_path(color = 'black') +
@@ -177,7 +179,7 @@ shinyServer(function(input, output) {
 			est_pts <- data.frame(buff_pts)
       
 			# data
-			dat <- doc_est(est_pts)   
+			dat <- doc_est(est_pts, maxbin = maxbin, minpts = minpts)   
       
       # logistic curve plot
       p2 <- plot(dat)
