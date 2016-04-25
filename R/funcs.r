@@ -195,6 +195,9 @@ doc_est <- function(dat_in, depth_var = 'Depth', sg_var = 'Seagrass', sg_cat = c
 
 	names(pts) <- c('Depth', 'n', 'sg_prp')
 	
+	# remove depth bins with zero seagrass
+	pts <- pts[pts$sg_prp > 0, ]
+	
 	##
 	# estimate a logistic growth function for the data
   mod_est <- logis_est(pts, 'sg_prp')
