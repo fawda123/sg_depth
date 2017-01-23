@@ -1,0 +1,10 @@
+data(sgpts_2010_tb)
+data(tb_seg)
+data(secc_all)
+source('R/funcs.R')
+library(tidyverse)
+library(reshape2)
+library(plyr)
+
+tmp <- secc_doc(secc_all, sgpts_2010_tb, tb_seg, seg_pts_yr = 2010, trace = T)
+save(tmp, file = 'C:/Users/mbeck/Desktop/tmp.RData')
