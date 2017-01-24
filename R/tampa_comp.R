@@ -41,20 +41,29 @@ secc <- secc_tb_raw %>%
     n > 6
     )
 
-# conver to spatial points data frame, clip by tb segs
-coordinates(secc) <- secc[, c('long', 'lat')]
-sel <- !is.na(secc %over% tb_seg)[, 1]
-secc <- secc[sel, ]
-secc_all_tb <- secc
+# split by year, make spatial points data frame list, clip by tb boundaries
+secc_all_tb <- split(secc, secc$yr) %>% 
+  lapply(., function(x){
+    
+    x <- select(x, -n) %>% 
+      rename(
+        SD = secchi_m, 
+        Longitude = long, 
+        Latitude = lat
+      )
+    
+    coords <- x[, c('Longitude', 'Latitude')]
+    x <- SpatialPointsDataFrame(coords, x)
+
+    sel <- !is.na(x %over% tb_seg)[, 1]
+    x <- x[sel, ]
+    
+    return(x)
+    
+  })
 
 save(secc_all_tb, file = 'data/secc_all_tb.RData', compress = 'xz')
 save(secc_all_tb, file = 'M:/docs/manuscripts/sgdepth_manu/data/secc_all_tb.RData', compress = 'xz')
-
-# toplo <- data.frame(secc)
-# ggplot(toplo, aes(x = long, y = lat)) + 
-#   geom_text(aes(label = n)) +
-#   facet_wrap(~yr) + 
-#   coord_equal()
 
 ##
 # seagrass points
@@ -64,7 +73,7 @@ rm(list = ls())
 roots <- 'L:/lab/FloridaCriteria/Seagrass_vs_Depth/09-Tampa_Bay'
 yrs <- c(1988, 1990, 1992, 1994, 1996, 1999, 2001, 2004, 2006, 2008, 2010)
 
-# these are not right.....
+# sg depth point files to import
 fls <- list(
   'Tampa_1988_Segments.dbf', 
   'Tampa_1990_Segments.dbf', 
