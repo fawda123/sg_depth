@@ -1,0 +1,15 @@
+2017/01/24 11:46:37
+NOAA's Vertical Datum Transformation v3.4
+
+                           INPUT                      OUTPUT                     
+Coordinate System:         Geographic                 Geographic                 
+Horizontal Datum:          NAD83                      NAD83                      
+Vertical Datum:            NAVD88                     MLLW                       
+Vertical Unit:             ft                         ft                         
+Height/Sounding:           height                     height                     
+
+From: m:\docs\sg_depth\data\sgpts_all_tb\sgpts_all_tb.txt
+To: m:\docs\sg_depth\data\sgpts_all_tb\results\sgpts_all_tb.txt
+Number of processed Points: 1486647
+Number of valid-transform Points: 1479507
+Number of points in this output file: 1486647
