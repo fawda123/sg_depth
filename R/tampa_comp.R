@@ -2,6 +2,7 @@
 library(foreign)
 library(tidyverse)
 library(lubridate)
+library(maptools)
 
 data(tb_seg)
 
@@ -44,6 +45,10 @@ secc <- secc_tb_raw %>%
 coordinates(secc) <- secc[, c('long', 'lat')]
 sel <- !is.na(secc %over% tb_seg)[, 1]
 secc <- secc[sel, ]
+secc_all_tb <- secc
+
+save(secc_all_tb, file = 'data/secc_all_tb.RData', compress = 'xz')
+save(secc_all_tb, file = 'M:/docs/manuscripts/sgdepth_manu/data/secc_all_tb.RData', compress = 'xz')
 
 # toplo <- data.frame(secc)
 # ggplot(toplo, aes(x = long, y = lat)) + 
@@ -124,7 +129,7 @@ write.table(data.frame(sgpts_all_tb), 'data/sgpts_all_tb/sgpts_all_tb.txt', sep 
 # vdatum in M:/GIS/vdatum
 # can run .bat file from command line, see test.bat in M:/GIS/vdatum
 # or gui with vdatum.jar
-# for TB, vertical datum is in navd88, must convert to mllw, ft to ft
+# for TB, vertical datum is in navd88, must convert to lmsl (local mean sea level), m to m
 # vdatum command line info here: https://vdatum.noaa.gov/docs/userguide_cmd.html#fileconv
 # also see M:/docs/manuscripts/sgdepth_manu/R/vdatum.R for some more info
 
@@ -143,7 +148,7 @@ sgpts_all_tb <- filter(dat, Depth > -999999) %>%
   })
 
 save(sgpts_all_tb, file = 'data/sgpts_all_tb.RData', compress = 'xz')
-
+save(sgpts_all_tb, file = 'M:/docs/manuscripts/sgdepth_manu/data/sgpts_all_tb.RData', compress = 'xz')
 
 
 
