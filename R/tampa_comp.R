@@ -19,7 +19,7 @@ data(secc_tb_raw)
 # select stations in same years as seagrass data and at least 6 samples per year
 secc <- secc_tb_raw %>% 
   filter(QACode == '') %>% 
-  select(Actual_Latitude, Actual_Longitude, SampleDate, Result_Value) %>% 
+  select(StationID, Actual_Latitude, Actual_Longitude, SampleDate, Result_Value) %>% 
   mutate(
     secchi_m = Result_Value * 0.3048, # verified that all were in ft
     date = as.character(SampleDate),
@@ -29,23 +29,23 @@ secc <- secc_tb_raw %>%
     lat = Actual_Latitude, 
     long = Actual_Longitude
   ) %>% 
-  select(lat, long, secchi_m, date, yr) %>% 
-  group_by(lat, long, yr) %>% 
+  select(StationID, lat, long, secchi_m, date, yr, mo) %>% 
+  group_by(StationID, lat, long, yr) %>% 
+  filter(length(unique(mo)) > 9) %>% # select min of 10 months at each loc, year
+  unique %>% # sometimes replicates in the same day
   summarise(
-    n = length(secchi_m), 
     secchi_m = mean(secchi_m)
   ) %>% 
   ungroup %>% 
   filter(
-    yr %in% yrs &
-    n > 6
-    )
+    yr %in% yrs
+  )
 
 # split by year, make spatial points data frame list, clip by tb boundaries
 secc_all_tb <- split(secc, secc$yr) %>% 
   lapply(., function(x){
     
-    x <- select(x, -n) %>% 
+    x <- select(x, -StationID) %>% 
       rename(
         SD = secchi_m, 
         Longitude = long, 
