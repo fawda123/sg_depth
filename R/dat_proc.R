@@ -251,14 +251,14 @@ save(shps, file = 'data/shps.RData')
 save(shps, file = 'M:/docs/manuscripts/sgdepth_manu/data/shps.RData')
 
 ######
-# processing satellite derived light attenuation for Tampa Bay
+# processing satellite derived secchi for Tampa Bay
 
 rm(list = ls())
 
 source('R/funcs.r')
 library(magrittr) 
   
-files <- list.files('data/satellite/Tampa_Bay', '_kd\\.txt$|lat|lon', full.names = TRUE)
+files <- list.files('data/satellite/Tampa_Bay', '_clarity\\.txt$|lat|lon', full.names = TRUE)
 
 # get files
 sats <- vector('list', length = length(files))
@@ -286,30 +286,32 @@ sats[['lon']] <- -1 * sats[['lon']]
 
 sats <- do.call('cbind', sats)
 sats <- data.frame(sats)
-names(sats) <- gsub('^X', 'kd_', names(sats))
-names(sats) <- gsub('_kd$', '', names(sats))
+names(sats) <- gsub('^X', 'clarity_', names(sats))
+names(sats) <- gsub('_clarity$', '', names(sats))
 
 # clarity only, remove 2011, 2012, 2013
 locs <- sats[, grepl('lat|lon', names(sats))]
 sats <- sats[, !grepl('lat|lon|2011$|2012$|2013$', names(sats))]
-sats_all <- apply(sats, 1, function(x) mean(x, na.rm = TRUE))
 
-sats_all <- data.frame(lon = locs$lon, lat = locs$lat, kd_ave = sats_all, sats)
+# mean is based on four years preceding 2010 data (including 2010)
+sats_all <- grepl('2006$|2007$|2008$|2009$|2010$', names(sats))
+sats_all <- apply(sats[, sats_all], 1, function(x) mean(x, na.rm = TRUE)) 
+sats_all <- data.frame(lon = locs$lon, lat = locs$lat, clarity_ave = sats_all, sats)
 
 ##
 # conver to raster
 library(raster)
 library(maptools)
 
-sats_ave <- sats_all[, c('lon', 'lat', 'kd_ave')]
-sat_rast <- make_rast_fun(sats_ave, 'kd_ave')
+sats_ave <- sats_all[, c('lon', 'lat', 'clarity_ave')]
+sat_rast <- make_rast_fun(sats_ave, 'clarity_ave')
 
 tb_sats <- list(ave_rast = sat_rast, sats_all = sats_all)
 save(tb_sats, file = 'data/tb_sats_rast.RData')
 save(tb_sats, file = 'M:/docs/manuscripts/sgdepth_manu/data/tb_sats.RData')
 
 ######
-# processing satellite derived attenuation for Choctawhatchee Bay
+# processing satellite derived clarity for Choctawhatchee Bay
 # this is different from TB because it has not been validated with in situ
 
 rm(list = ls())
