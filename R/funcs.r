@@ -769,7 +769,7 @@ make_rast_fun <- function(dat_in, fill_col){
   ncol(rast) <- length(unique(dat_in$lon))
   nrow(rast) <- length(unique(dat_in$lat))
 
-  out <- rasterize(dat_in, rast, data.frame(dat_in[, fill_col]), fun = mean)  
+  out <- rasterize(dat_in, rast, data.frame(dat_in)[, fill_col], fun = mean)  
   
   return(out)
   
