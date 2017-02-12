@@ -8,6 +8,18 @@ data(tb_seg)
 
 yrs <- c(1988, 1990, 1992, 1994, 1996, 1999, 2001, 2004, 2006, 2008, 2010)
 
+# EPC routine monitoring stations
+stats <- read.dbf('M:/GIS/tb_sta.dbf') %>% 
+  select(sta, Actual_Lat, Actual_Lon) %>% 
+  rename(
+    StationID = sta, 
+    lat = Actual_Lat, 
+    long = Actual_Lon
+  ) %>% 
+  mutate(
+    StationID = as.character(StationID)
+  )
+    
 ##
 # process secchi data
 # secc_tb_raw was output from http://www.tampabay.wateratlas.usf.edu/datadownload
@@ -15,22 +27,22 @@ yrs <- c(1988, 1990, 1992, 1994, 1996, 1999, 2001, 2004, 2006, 2008, 2010)
 data(secc_tb_raw)
 
 # get secchi data with good QA codes
-# average multiple obs at same location within a year
-# select stations in same years as seagrass data and at least 6 samples per year
+# select the stations that are routine EPC locations
+# select stations in same years as seagrass data and at least 10 samples per year
+# average by location and year if fit criteria
 secc <- secc_tb_raw %>% 
-  filter(QACode == '') %>% 
-  select(StationID, Actual_Latitude, Actual_Longitude, SampleDate, Result_Value) %>% 
+  filter(QACode == '') %>%
+  select(StationID, SampleDate, Result_Value) %>% 
   mutate(
     secchi_m = Result_Value * 0.3048, # verified that all were in ft
     date = as.character(SampleDate),
     date = as.Date(date, format = '%m/%d/%Y %H:%M', tz = 'America/Jamaica'), 
     yr = year(date),
     mo = month(date),
-    lat = Actual_Latitude, 
-    long = Actual_Longitude
+    StationID = as.character(StationID)
   ) %>% 
-  select(StationID, lat, long, secchi_m, date, yr, mo) %>% 
-  group_by(StationID, lat, long, yr) %>% 
+  filter(StationID %in% stats$StationID) %>% 
+  group_by(StationID, yr) %>% 
   filter(length(unique(mo)) > 9) %>% # select min of 10 months at each loc, year
   unique %>% # sometimes replicates in the same day
   summarise(
@@ -39,7 +51,9 @@ secc <- secc_tb_raw %>%
   ungroup %>% 
   filter(
     yr %in% yrs
-  )
+  ) %>% 
+  arrange(yr, StationID) %>% 
+  left_join(., stats, by = 'StationID')
 
 # split by year, make spatial points data frame list, clip by tb boundaries
 secc_all_tb <- split(secc, secc$yr) %>% 
