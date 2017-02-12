@@ -172,12 +172,3 @@ sgpts_all_tb <- filter(dat, Depth > -999999) %>%
 
 save(sgpts_all_tb, file = 'data/sgpts_all_tb.RData', compress = 'xz')
 save(sgpts_all_tb, file = 'M:/docs/manuscripts/sgdepth_manu/data/sgpts_all_tb.RData', compress = 'xz')
-
-
-
-
-
-
-
-
-

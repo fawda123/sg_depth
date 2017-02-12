@@ -307,7 +307,7 @@ sats_ave <- sats_all[, c('lon', 'lat', 'clarity_ave')]
 sat_rast <- make_rast_fun(sats_ave, 'clarity_ave')
 
 tb_sats <- list(ave_rast = sat_rast, sats_all = sats_all)
-save(tb_sats, file = 'data/tb_sats_rast.RData')
+save(tb_sats, file = 'data/tb_sats.RData')
 save(tb_sats, file = 'M:/docs/manuscripts/sgdepth_manu/data/tb_sats.RData')
 
 ######
