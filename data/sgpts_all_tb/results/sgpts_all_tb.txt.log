@@ -1,4 +1,4 @@
-2017/01/24 16:42:52
+2017/03/17 10:20:56
 NOAA's Vertical Datum Transformation v3.4
 
                            INPUT                      OUTPUT                     
@@ -10,6 +10,6 @@ Height/Sounding:           height                     height
 
 From: m:\docs\sg_depth\data\sgpts_all_tb\sgpts_all_tb.txt
 To: m:\docs\sg_depth\data\sgpts_all_tb\results\sgpts_all_tb.txt
-Number of processed Points: 1486647
-Number of valid-transform Points: 1479507
-Number of points in this output file: 1486647
+Number of processed Points: 1791407
+Number of valid-transform Points: 1781964
+Number of points in this output file: 1791407

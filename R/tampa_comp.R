@@ -6,7 +6,7 @@ library(maptools)
 
 data(tb_seg)
 
-yrs <- c(1988, 1990, 1992, 1994, 1996, 1999, 2001, 2004, 2006, 2008, 2010)
+yrs <- c(1988, 1990, 1992, 1994, 1996, 1999, 2001, 2004, 2006, 2008, 2010, 2012, 2014)
 
 # EPC routine monitoring stations
 stats <- read.dbf('M:/GIS/tb_sta.dbf') %>% 
@@ -85,7 +85,7 @@ save(secc_all_tb, file = 'M:/docs/manuscripts/sgdepth_manu/data/secc_all_tb.RDat
 rm(list = ls())
 
 roots <- 'L:/lab/FloridaCriteria/Seagrass_vs_Depth/09-Tampa_Bay'
-yrs <- c(1988, 1990, 1992, 1994, 1996, 1999, 2001, 2004, 2006, 2008, 2010)
+yrs <- c(1988, 1990, 1992, 1994, 1996, 1999, 2001, 2004, 2006, 2008, 2010, 2012, 2014)
 
 # sg depth point files to import
 fls <- list(
@@ -99,7 +99,9 @@ fls <- list(
   'Tampa_2004_Segments.dbf',
   'Tampa_2006_SG_Segments.dbf',
   'Tampa_2008_Segments.dbf',
-  'Tampa_2010_Segments.dbf'
+  'Tampa_2010_Segments.dbf', 
+  'Tampa_2012_Segments.dbf',
+  'Tampa_2014_Segments.dbf'
 )
 
 # import all dbf files
@@ -116,12 +118,15 @@ for(i in seq_along(yrs)){
     read.dbf %>% 
     mutate(yr = yr)
   names(tmp) <- tolower(names(tmp))
-  tmp <- tmp[, names(tmp) %in% c('yr', 'lat', 'lon', 'depth', 'descript', 'seagrass', 'fluccscode')]
+  tmp <- tmp[, names(tmp) %in% c('yr', 'lat', 'lon', 'depth', 'descript', 'seagrass', 'fluccscode', 'fluccs_cod')]
+  
+  if(sum(c('fluccs_cod', 'descript') %in% names(tmp)) == 2)
+    tmp <- select(tmp, -fluccs_cod)
   
   if(sum(c('fluccscode', 'descript') %in% names(tmp)) == 2)
     tmp <- select(tmp, -fluccscode)
   
-  names(tmp)[names(tmp) %in% c('seagrass', 'fluccscode', 'descript')] <- 'seagrass'
+  names(tmp)[names(tmp) %in% c('seagrass', 'fluccscode', 'fluccs_cod', 'descript')] <- 'seagrass'
   
   out_ls[[i]] <- tmp
   
@@ -130,8 +135,8 @@ for(i in seq_along(yrs)){
 # combine data
 sgpts_all_tb <- bind_rows(out_ls) %>% 
   mutate(
-    seagrass = gsub('^DSG$|^Patchy Seagrass$', 'Discontinuous', seagrass),
-    seagrass = gsub('^CSG$|^Continuous Seagrass$', 'Continuous', seagrass), 
+    seagrass = gsub('^9113$|^DSG$|^Patchy Seagrass$', 'Discontinuous', seagrass),
+    seagrass = gsub('^9116$|^CSG$|^Continuous Seagrass$', 'Continuous', seagrass), 
     seagrass = ifelse(seagrass %in% c('Continuous', 'Discontinuous'), seagrass, NA),
     seagrass = factor(seagrass), 
     depth = pmax(0, -1 * depth)
