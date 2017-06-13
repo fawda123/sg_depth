@@ -782,7 +782,7 @@ make_rast_fun <- function(dat_in, fill_col){
 #' @param xsitu chr string of column name for in situ kd values
 #' @param ysitu chr string of column name of cumulative sum of satellite kd values
 #' @param xsats chr string of column for satellite kd values
-#' @parma ysats chr string of column name for cumulative sum of satellite kd values
+#' @param ysats chr string of column name for cumulative sum of satellite kd values
 #' 
 #' @return A list with two regression objects, the first is the regression for the in situe curve and the second is the regression for the satellite estimated curve
 kd_mod <- function(dat_in, xsitu, ysitu, xsats, ysats){
@@ -823,7 +823,7 @@ kd_mod <- function(dat_in, xsitu, ysitu, xsats, ysats){
 #'
 kd_backsat <- function(mods_in, dat_in, xsat, xrng = c(0, 2), steps = 2000,
   plot = FALSE, xsitu = 'kPAR', xsats = 'layer', ysitu = 'cumkPAR',
-  ysats = 'cumlayer', ylim = c(0, 1)){
+  ysats = 'cumlayer', ylim = c(0, 1), cols = NULL){
   
   # get corrected kd from satellite kd
   preddat <- data.frame(xsat)
@@ -851,31 +851,40 @@ kd_backsat <- function(mods_in, dat_in, xsat, xrng = c(0, 2), steps = 2000,
     backdat <- data.frame(
       x = xs,
       y = ys, 
-      group = rep(seq(1, length(yback)), each = 4)
+      group = rep(seq(1, length(yback)), each = 4), 
+      labs = c(1, 2, 3, 4)
     )
     
     # rename raw variables
     p_nms <- c('xpt1', 'ypt1', 'xpt2', 'ypt2')
     names(dat_in)[names(dat_in) %in% c(xsitu, ysitu, xsats, ysats)] <- p_nms
     
-    p <- ggplot(dat_in, aes(x = xpt1, y = ypt1, colour = 'In Situ')) + 
-      geom_point() +
+    # colors
+    if(is.null(cols))
+      cols <- c("#F8766D", "#00BFC4")
+    
+    p <- ggplot(dat_in) + 
+      geom_point(aes(x = xpt1, y = ypt1, colour = 'In Situ')) +
       geom_point(aes(x = xpt2, y = ypt2, colour = 'Satellite')) + 
       geom_line(data = bilines, aes(x = xvals, y = ysitu_lns, 
         colour = 'In Situ')) + 
       geom_line(data = bilines, aes(x = xvals, y = ysats_lns,
         colour = 'Satellite')) +
-      geom_path(data = backdat, aes(x = x, y = y, group = group, colour = group), 
+      geom_path(data = backdat, aes(x = x, y = y, group = group), 
         colour = 'black') +
-      geom_point(dat = backdat, aes(x = x, y = y, group = group, colour = group), 
-        colour = 'black', pch = 16, size = 4) +
+      geom_label(dat = backdat, aes(x = x, y = y, group = group, label = labs), 
+        size = 4) +
+      scale_colour_manual(values = cols) + 
       scale_x_continuous(name = expression(italic(K [d]))) + 
       scale_y_continuous(name = expression(paste('Cumulative ', italic(K [d]))),
         limits = ylim) +
-      theme_classic() + 
+      theme_classic() +
       theme(legend.title = element_blank(), 
-        legend.position = c(0, 1), legend.justification = c(0, 1),
-        text = element_text(size=20))
+        legend.justification = c('right', 'top'),
+        legend.position = c(1, 1), 
+        text = element_text(size=18), 
+        legend.key = element_rect(fill = "transparent", colour = "transparent")
+        )
     
     return(p)
     

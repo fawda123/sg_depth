@@ -455,8 +455,8 @@ sat_rast_2010 <- make_rast_fun(sats_2010, 'kd_2010')
 # sample the raster with in situ data locations
 samp_dat <- choc_situ
 coordinates(samp_dat) <- c('Longitude', 'Latitude')
-samp_dat <- extract(sat_rast_2010, samp_dat) %>% 
-  data.frame  %>% 
+samp_dat <- raster::extract(sat_rast_2010, samp_dat) %>% 
+  data.frame(kd_2010 = .)  %>% 
   mutate(
     kPAR = choc_situ$kPAR,
     cumkPAR = choc_situ$cumkPAR,
